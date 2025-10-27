@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "tailwindcss/theme";
+
+/* Web fonts for template presets */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;700&family=Merriweather:wght@400;700&family=Montserrat:wght@500;700&display=swap');
+@import "tailwindcss/theme";
+
+/* Custom animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slideInUp {
+  animation: slideInUp 1s ease-out;
+}
+
