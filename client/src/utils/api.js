@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: "https://ecertificate-generator.onrender.com/api",
 });
 
 // Request interceptor to attach token
