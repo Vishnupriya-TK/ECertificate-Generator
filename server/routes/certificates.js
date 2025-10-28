@@ -319,7 +319,20 @@ router.get("/:id/download", protect, async (req, res) => {
 
     // Generate PDF using puppeteer
     const puppeteer = require('puppeteer');
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+    });
     // const puppeteer = require('puppeteer-core');
     // const browser = await puppeteer.launch({
     //   headless: true,
@@ -381,7 +394,20 @@ router.post("/:id/share", protect, async (req, res) => {
 
     // Render PDF
     const puppeteer = require('puppeteer');
-    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ],
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
+    });
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
     await page.setContent(html, { waitUntil: 'load' });
