@@ -318,23 +318,23 @@ router.get("/:id/download", protect, async (req, res) => {
     if (doc.createdBy.toString() !== req.user._id.toString()) return res.status(403).json({ message: "Forbidden" });
 
     // Generate PDF using puppeteer
-    // const puppeteer = require('puppeteer');
-    // const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
-    const puppeteer = require('puppeteer-core');
-    const browser = await puppeteer.launch({
-      headless: true,
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
-    });
+    const puppeteer = require('puppeteer');
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox','--disable-setuid-sandbox'] });
+    // const puppeteer = require('puppeteer-core');
+    // const browser = await puppeteer.launch({
+    //   headless: true,
+    //   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
+    //   args: [
+    //     '--no-sandbox',
+    //     '--disable-setuid-sandbox',
+    //     '--disable-dev-shm-usage',
+    //     '--disable-accelerated-2d-canvas',
+    //     '--no-first-run',
+    //     '--no-zygote',
+    //     '--single-process',
+    //     '--disable-gpu'
+    //   ]
+    // });
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
 
