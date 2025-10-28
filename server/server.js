@@ -19,7 +19,7 @@ if (!process.env.MONGO_URI) {
   process.exit(1);
 }
 
-app.use(cors());
+app.use(cors("https://ecertificate-generator-frontend.onrender.com"));
 // Increase body size to allow embedded images (data URLs) for logos/signatures/background
 // Note: if you still hit 413, consider reducing image sizes or using cloud storage
 app.use(express.json({ limit: "50mb" }));
