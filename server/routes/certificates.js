@@ -333,21 +333,6 @@ router.get("/:id/download", protect, async (req, res) => {
       ],
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined
     });
-    // const puppeteer = require('puppeteer-core');
-    // const browser = await puppeteer.launch({
-    //   headless: true,
-    //   executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || puppeteer.executablePath(),
-    //   args: [
-    //     '--no-sandbox',
-    //     '--disable-setuid-sandbox',
-    //     '--disable-dev-shm-usage',
-    //     '--disable-accelerated-2d-canvas',
-    //     '--no-first-run',
-    //     '--no-zygote',
-    //     '--single-process',
-    //     '--disable-gpu'
-    //   ]
-    // });
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
 
