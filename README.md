@@ -9,12 +9,7 @@ It supports **individual and bulk certificate generation**, **PDF download**, an
 
 ## 🌐 Live Demo
 
-🚀 Visit Here..](https://ecertificate-generator-frontend.onrender.com/)
-
-
-*(Replace with your actual deployed links)*
-
----
+🚀 [https://ecertificate-generator-frontend.onrender.com/](Visit Here...)
 
 ## 🚀 Tech Stack
 
