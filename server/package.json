@@ -4,8 +4,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx puppeteer browsers install chrome",
-    "postinstall": "npx puppeteer browsers install chrome",
+    "build": "puppeteer browsers install chrome",
+    "postinstall": "puppeteer browsers install chrome",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
@@ -25,6 +25,7 @@
     "mongoose": "^8.18.2",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.9",
+    "npx": "^10.2.2",
     "puppeteer": "^24.22.3",
     "uuid": "^13.0.0"
   },
