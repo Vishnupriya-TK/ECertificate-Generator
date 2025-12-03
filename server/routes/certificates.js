@@ -3,6 +3,119 @@ const router = express.Router();
 const Certificate = require("../model/Certificate.js");
 const { protect } = require("../middleware/authMiddleware.js");
 const nodemailer = require("nodemailer");
+const puppeteer = require('puppeteer');
+const path = require('path');
+const fs = require('fs');
+
+// Helper function to get Puppeteer launch options for Render platform
+function getPuppeteerLaunchOptions() {
+  const options = {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--single-process',
+      '--disable-gpu',
+      '--disable-web-security',
+      '--disable-features=VizDisplayCompositor',
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding'
+    ]
+  };
+
+  // Set cache directory for Render platform
+  if (process.env.RENDER) {
+    const renderCacheDir = '/opt/render/.cache/puppeteer';
+    process.env.PUPPETEER_CACHE_DIR = process.env.PUPPETEER_CACHE_DIR || renderCacheDir;
+    // Ensure cache directory exists
+    try {
+      if (!fs.existsSync(renderCacheDir)) {
+        fs.mkdirSync(renderCacheDir, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('Could not create cache directory:', err.message);
+    }
+  }
+
+  // Try to find Chrome executable
+  // First, check if explicit path is provided
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    options.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    return options;
+  }
+
+  // Try to find Chrome in Puppeteer's cache directory
+  try {
+    const cacheDir = process.env.PUPPETEER_CACHE_DIR || 
+                     path.join(process.env.HOME || process.cwd(), '.cache', 'puppeteer');
+    
+    // Puppeteer stores Chrome in a structure like: cache/chrome/chrome-{version}/chrome-linux/chrome
+    const findChromeRecursive = (dir, depth = 0) => {
+      if (depth > 5) return null; // Limit recursion depth
+      if (!fs.existsSync(dir)) return null;
+      
+      try {
+        const entries = fs.readdirSync(dir, { withFileTypes: true });
+        
+        // Look for chrome executable
+        for (const entry of entries) {
+          const fullPath = path.join(dir, entry.name);
+          
+          if (entry.isFile() && (entry.name === 'chrome' || entry.name === 'chromium' || entry.name === 'headless_shell')) {
+            // Check if it's executable
+            try {
+              fs.accessSync(fullPath, fs.constants.F_OK);
+              return fullPath;
+            } catch {}
+          }
+          
+          if (entry.isDirectory() && !entry.name.startsWith('.')) {
+            const found = findChromeRecursive(fullPath, depth + 1);
+            if (found) return found;
+          }
+        }
+      } catch (err) {
+        // Skip directories we can't read
+      }
+      
+      return null;
+    };
+
+    const chromePath = findChromeRecursive(cacheDir);
+    if (chromePath) {
+      options.executablePath = chromePath;
+      return options;
+    }
+  } catch (err) {
+    console.warn('Could not search Puppeteer cache:', err.message);
+  }
+
+  // Try system-installed Chrome locations
+  const systemPaths = [
+    '/usr/bin/google-chrome-stable',
+    '/usr/bin/google-chrome',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/chromium',
+  ];
+
+  for (const chromePath of systemPaths) {
+    try {
+      if (fs.existsSync(chromePath)) {
+        options.executablePath = chromePath;
+        return options;
+      }
+    } catch {}
+  }
+
+  // Let Puppeteer try to find Chrome automatically
+  // It should work if postinstall script ran successfully
+  return options;
+}
 
 // Create certificate(s) - protected
 router.post("/create", protect, async (req, res) => {
@@ -318,25 +431,8 @@ router.get("/:id/download", protect, async (req, res) => {
     if (doc.createdBy.toString() !== req.user._id.toString()) return res.status(403).json({ message: "Forbidden" });
 
     // Generate PDF using puppeteer
-    const puppeteer = require('puppeteer');
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ]
-    });
+    const launchOptions = getPuppeteerLaunchOptions();
+    const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
 
@@ -364,7 +460,15 @@ router.get("/:id/download", protect, async (req, res) => {
     res.send(pdfBuffer);
   } catch (err) {
     console.error('PDF download error:', err);
-    res.status(500).json({ message: err.message || 'Failed to generate PDF' });
+    const errorMessage = err.message || 'Failed to generate PDF';
+    // Provide more helpful error messages
+    if (errorMessage.includes('Chrome') || errorMessage.includes('browser')) {
+      res.status(500).json({ 
+        message: 'Chrome browser not found. Please ensure Chrome is installed via: npm run build or puppeteer browsers install chrome' 
+      });
+    } else {
+      res.status(500).json({ message: errorMessage });
+    }
   }
 });
 
@@ -382,25 +486,8 @@ router.post("/:id/share", protect, async (req, res) => {
     if (doc.templateKey === 'minimal') html = generateMinimalHTML(doc); else html = generateDirectHTML(doc);
 
     // Render PDF
-    const puppeteer = require('puppeteer');
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu',
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding'
-      ]
-    });
+    const launchOptions = getPuppeteerLaunchOptions();
+    const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
     await page.setViewport({ width: 794, height: 1123 });
     await page.setContent(html, { waitUntil: 'load' });
@@ -459,7 +546,16 @@ router.post("/:id/share", protect, async (req, res) => {
     const previewUrl = nodemailer.getTestMessageUrl?.(info);
     res.json({ success: true, message: 'Email sent successfully', previewUrl });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('Email share error:', err);
+    const errorMessage = err.message || 'Failed to send email';
+    // Provide more helpful error messages
+    if (errorMessage.includes('Chrome') || errorMessage.includes('browser')) {
+      res.status(500).json({ 
+        message: 'Chrome browser not found. Please ensure Chrome is installed via: npm run build or puppeteer browsers install chrome' 
+      });
+    } else {
+      res.status(500).json({ message: errorMessage });
+    }
   }
 });
 
