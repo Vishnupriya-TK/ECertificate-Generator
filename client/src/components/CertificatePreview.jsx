@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useRef } from "react";
 import { generateCertificateHTML } from "../utils/certificateHtml";
+import { htmlToPdfBlob, sendPdfToServer } from "../utils/pdf";
+import { saveAs } from 'file-saver';
 
 function DirectTemplate({ item, start, end, onNameChange }) {
   const styles = item?.styles || {};
@@ -230,10 +232,40 @@ export default function CertificatePreview({ item, onChange }) {
     doc.close();
   }, [html]);
 
+  const downloadPdf = async () => {
+    try {
+      const blob = await htmlToPdfBlob(html);
+      saveAs(blob, `certificate-${item?._id || 'preview'}.pdf`);
+    } catch (err) {
+      console.error('PDF export failed', err);
+      alert('Failed to generate PDF: ' + (err?.message || err));
+    }
+  };
+
+  const emailPdf = async () => {
+    try {
+      const to = window.prompt('Recipient email', '');
+      if (!to) return;
+      const subject = window.prompt('Subject', 'Your Certificate') || 'Your Certificate';
+      const greeting = window.prompt('Message', `Dear ${item?.studentName || ''},\n\nPlease find your certificate attached.`) || '';
+      const blob = await htmlToPdfBlob(html);
+      const res = await sendPdfToServer({ certificateId: item?._id, blob, subject, greeting, email: to });
+      alert(res.message || 'Email sent');
+    } catch (err) {
+      console.error('Email send failed', err);
+      alert('Failed to send email: ' + (err?.response?.data?.message || err.message));
+    }
+  };
+
   return (
     <div className="relative w-full overflow-auto">
       <div className="relative mx-auto" style={{ width: 794 }}>
         <iframe ref={iframeRef} title="certificate-preview" style={{ width: 794, height: 1123, border: 0, background: "transparent" }} />
+      </div>
+
+      <div className="mt-4 flex gap-3 justify-center">
+        <button type="button" className="btn" onClick={downloadPdf}>Download as PDF</button>
+        <button type="button" className="btn" onClick={emailPdf}>Email as PDF</button>
       </div>
     </div>
   );

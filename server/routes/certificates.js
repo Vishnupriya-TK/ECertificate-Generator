@@ -6,6 +6,8 @@ const nodemailer = require("nodemailer");
 const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
+const multer = require('multer');
+const upload = multer();
 
 // Helper function to get Puppeteer launch options for Render platform
 function getPuppeteerLaunchOptions() {
@@ -42,14 +44,11 @@ function getPuppeteerLaunchOptions() {
     }
   }
 
-  // Try to find Chrome executable
-  // First, check if explicit path is provided
   if (process.env.PUPPETEER_EXECUTABLE_PATH) {
     options.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
     return options;
   }
 
-  // Try to find Chrome in Puppeteer's cache directory
   try {
     const cacheDir = process.env.PUPPETEER_CACHE_DIR || 
                      path.join(process.env.HOME || process.cwd(), '.cache', 'puppeteer');
@@ -188,7 +187,8 @@ function buildGoogleFontsLink(doc) {
   ]
     .filter(Boolean)
     .map((f) => String(f).split(',')[0].trim().replace(/"|'/g, ''));
-  const unique = Array.from(new Set(families)).filter((f) => f && !/^(Arial|Georgia|Times New Roman|Times|Roboto|Poppins|Merriweather|Montserrat)$/i.test(''));
+  // Exclude common system fonts from unique set (use the actual font string)
+  const unique = Array.from(new Set(families)).filter((f) => f && !/^(Arial|Georgia|Times New Roman|Times|Roboto|Poppins|Merriweather|Montserrat)$/i.test(f));
   // We still want to include common Google fonts if chosen
   const common = Array.from(new Set(families.filter((f) => /^(Roboto|Poppins|Merriweather|Montserrat)$/i.test(f))));
   const all = Array.from(new Set([...common, ...unique]));
@@ -343,8 +343,8 @@ function generateMinimalHTML(doc) {
           .certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background: white; padding: 40px; text-align: center; box-sizing: border-box; }
           .header { margin-bottom: 30px; display:flex; justify-content: space-between; align-items:center; }
           .logo { height: 60px; object-fit: contain; margin-bottom: 0; }
-          .college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize }px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; font-weight: bold; color: #1f2937; }
-          .college-desc { font-family: ${collegeDescStyle.fontFamily }; font-size: ${collegeDescStyle.fontSize }px; line-height: ${collegeDescStyle.lineHeight || 1.5}; text-align: ${collegeDescStyle.align || 'center'}; width: ${collegeDescStyle.width || 80}%; margin: ${collegeDescStyle.marginTop || 10}px auto ${collegeDescStyle.marginBottom || 20}px auto; color: #6b7280; }
+          .college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize || 18}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; font-weight: bold; color: #1f2937; }
+          .college-desc { font-family: ${collegeDescStyle.fontFamily || 'inherit'}; font-size: ${collegeDescStyle.fontSize || 14}px; line-height: ${collegeDescStyle.lineHeight || 1.5}; text-align: ${collegeDescStyle.align || 'center'}; width: ${collegeDescStyle.width || 80}%; margin: ${collegeDescStyle.marginTop || 10}px auto ${collegeDescStyle.marginBottom || 20}px auto; color: #6b7280; }
           .title { font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af; }
           .title-image { height: 48px; object-fit: contain; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; }
           .intro { width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 18}px; line-height: ${introStyle.lineHeight || 1.5}; color: #374151; }
@@ -473,7 +473,7 @@ router.get("/:id/download", protect, async (req, res) => {
 });
 
 // Share certificate via email with attached PDF
-router.post("/:id/share", protect, async (req, res) => {
+router.post("/:id/share", protect, upload.single('pdf'), async (req, res) => {
   try {
     const doc = await Certificate.findById(req.params.id);
     if (!doc) return res.status(404).json({ message: "Not found" });
@@ -481,25 +481,45 @@ router.post("/:id/share", protect, async (req, res) => {
     const toEmail = (doc.students && doc.students[0] && doc.students[0].email) || req.body.email;
     if (!toEmail) return res.status(400).json({ message: "No recipient email found" });
 
-    // Generate HTML
-    let html;
-    if (doc.templateKey === 'minimal') html = generateMinimalHTML(doc); else html = generateDirectHTML(doc);
+    const greeting = req.body.greeting || `Dear ${doc.studentName},\n\nCongratulations! Please find your certificate attached.\n\nRegards,\n${doc.collegeName || 'Team'}`;
 
-    // Render PDF
-    const launchOptions = getPuppeteerLaunchOptions();
-    const browser = await puppeteer.launch(launchOptions);
-    const page = await browser.newPage();
-    await page.setViewport({ width: 794, height: 1123 });
-    await page.setContent(html, { waitUntil: 'load' });
-    const landscape = String(req.body?.orientation || '').toLowerCase() === 'landscape';
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      landscape,
-      printBackground: true,
-      margin: { top: 0, right: 0, bottom: 0, left: 0 },
-      preferCSSPageSize: true
-    });
-    await browser.close();
+    if (req.body?.dryRun) {
+      return res.json({
+        success: true,
+        message: 'Email draft generated',
+        draft: {
+          to: toEmail,
+          subject: req.body.subject || 'Your Certificate',
+          body: greeting
+        }
+      });
+    }
+
+    // If client uploaded a PDF (field name: 'pdf'), use it. Otherwise, generate PDF using Puppeteer.
+    let pdfBuffer;
+    if (req.file && req.file.buffer) {
+      pdfBuffer = req.file.buffer;
+    } else {
+      // Generate HTML
+      let html;
+      if (doc.templateKey === 'minimal') html = generateMinimalHTML(doc); else html = generateDirectHTML(doc);
+
+      // Render PDF using Puppeteer
+      const launchOptions = getPuppeteerLaunchOptions();
+      const browser = await puppeteer.launch(launchOptions);
+      const page = await browser.newPage();
+      await page.setViewport({ width: 794, height: 1123 });
+      await page.setContent(html, { waitUntil: 'load' });
+      const landscape = String(req.body?.orientation || '').toLowerCase() === 'landscape';
+      pdfBuffer = await page.pdf({
+        format: 'A4',
+        landscape,
+        printBackground: true,
+        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+        preferCSSPageSize: true
+      });
+      await browser.close();
+    }
 
     // Email transport - use env vars
     let transporter;
@@ -518,20 +538,6 @@ router.post("/:id/share", protect, async (req, res) => {
         port: 587,
         secure: false,
         auth: { user: testAccount.user, pass: testAccount.pass }
-      });
-    }
-
-    const greeting = req.body.greeting || `Dear ${doc.studentName},\n\nCongratulations! Please find your certificate attached.\n\nRegards,\n${doc.collegeName || 'Team'}`;
-
-    if (req.body?.dryRun) {
-      return res.json({
-        success: true,
-        message: 'Email draft generated',
-        draft: {
-          to: toEmail,
-          subject: req.body.subject || 'Your Certificate',
-          body: greeting
-        }
       });
     }
 
