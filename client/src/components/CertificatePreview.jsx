@@ -232,14 +232,57 @@ export default function CertificatePreview({ item, onChange }) {
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
 
-    // Inject a small style to scale/center the certificate when showing landscape in the iframe
+    // Prepare HTML to write into iframe
     let htmlToWrite = html;
+
     if (orientation === 'landscape') {
-      const scale = (previewDims.height / 1123).toFixed(3); // scale relative to original portrait height
-      const injectStyle = `\n<style> .certificate{transform: scale(${scale}); transform-origin: top center; margin: 0 auto;} body{display:flex;align-items:center;justify-content:center;background:#ffffff;} </style>\n`;
-      // Insert style right before </head> if present, otherwise prepend
-      if (htmlToWrite.includes('</head>')) htmlToWrite = htmlToWrite.replace('</head>', `${injectStyle}</head>`);
-      else htmlToWrite = injectStyle + htmlToWrite;
+      // Inject a small script that computes the visible bounding box of the certificate
+      const injectScript = `
+<script>(function(){
+  function ready(){
+    try{
+      const cert = document.querySelector('.certificate');
+      if(!cert) return;
+      const elRect = cert.getBoundingClientRect();
+      let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+      const children = cert.querySelectorAll('*');
+      children.forEach(ch=>{
+        const r = ch.getBoundingClientRect();
+        if (r.width > 2 && r.height > 2) {
+          minX = Math.min(minX, r.left);
+          minY = Math.min(minY, r.top);
+          maxX = Math.max(maxX, r.right);
+          maxY = Math.max(maxY, r.bottom);
+        }
+      });
+      if (!isFinite(minX)) { minX = elRect.left; minY = elRect.top; maxX = elRect.right; maxY = elRect.bottom; }
+      const contentW = maxX - minX;
+      const contentH = maxY - minY;
+      const margin = 24;
+      const previewW = ${previewDims.width};
+      const previewH = ${previewDims.height};
+      const scale = Math.min((previewW - margin*2) / contentW, (previewH - margin*2) / contentH) * 0.95;
+      const shiftX = -(minX - elRect.left);
+      const shiftY = -(minY - elRect.top);
+      cert.style.transformOrigin = 'top left';
+      cert.style.transform = 'translate(' + shiftX + 'px,' + shiftY + 'px) scale(' + scale + ')';
+      document.body.style.display = 'flex';
+      document.body.style.alignItems = 'center';
+      document.body.style.justifyContent = 'center';
+      document.body.style.background = '#ffffff';
+    } catch(e) { console.error(e); }
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') ready(); else document.addEventListener('DOMContentLoaded', ready);
+})();</script>
+`;
+      // Insert script right before </body> if present, otherwise append
+      if (htmlToWrite.includes('</body>')) htmlToWrite = htmlToWrite.replace('</body>', `${injectScript}</body>`);
+      else htmlToWrite = htmlToWrite + injectScript;
+    } else {
+      // Portrait: simple centering
+      const centerStyle = `\n<style> body{display:flex;align-items:center;justify-content:center;background:#ffffff;} </style>\n`;
+      if (htmlToWrite.includes('</head>')) htmlToWrite = htmlToWrite.replace('</head>', `${centerStyle}</head>`);
+      else htmlToWrite = centerStyle + htmlToWrite;
     }
 
     doc.open();

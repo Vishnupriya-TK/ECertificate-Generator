@@ -112,11 +112,12 @@ export default function ManageCertificates() {
             onSaved={()=>{ setModalOpen(false); setEditingId(null); fetchList(); }}
           />
         )}
-        <table className="w-full border-collapse">
-          <thead><tr className="bg-gray-200"><th className="p-2 border">Name</th><th className="p-2 border">Email</th><th className="p-2 border">College</th><th className="p-2 border">Actions</th></tr></thead>
-          <tbody>
-            {list.map(item => (
-              <tr key={item._id} className="text-center">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead><tr className="bg-gray-200"><th className="p-2 border">Name</th><th className="p-2 border">Email</th><th className="p-2 border">College</th><th className="p-2 border">Actions</th></tr></thead>
+            <tbody>
+              {list.map(item => (
+                <tr key={item._id} className="text-center">
                 <td className="p-2 border">
                   {editingId === item._id ? (
                     <input
@@ -183,8 +184,9 @@ export default function ManageCertificates() {
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
