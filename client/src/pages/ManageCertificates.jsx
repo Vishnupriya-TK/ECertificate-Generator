@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import API from "../utils/api";
+import { htmlToPdfBlob, sendPdfToServer } from "../utils/pdf";
+import { generateCertificateHTML } from "../utils/certificateHtml";
+import { saveAs } from 'file-saver';
 
 export default function ManageCertificates() {
   const [list, setList] = useState([]);
@@ -18,27 +21,24 @@ export default function ManageCertificates() {
 
   useEffect(()=> { fetchList(); }, []);
 
-  const handleShare = async (id, mode = 'send', orientation = 'portrait') => {
+  const handleShare = async (id, orientation = 'portrait') => {
     try {
-      if (mode === 'mailto') {
-        const res = await API.post(`/certificates/${id}/share`, { dryRun: true, greeting: 'Congratulations on your achievement! Please find your certificate attached.', orientation });
-        const draft = res.data?.draft || {};
-        const to = encodeURIComponent(draft.to || '');
-        const subject = encodeURIComponent(draft.subject || 'Your Certificate');
-        const body = encodeURIComponent(draft.body || '');
-        window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-        return;
-      }
-      const res = await API.post(`/certificates/${id}/share`, { greeting: 'Congratulations on your achievement! Please find your certificate attached.', orientation });
-      const preview = res.data?.previewUrl;
-      if (preview) {
-        try { window.open(preview, '_blank', 'noopener'); } catch {}
-      }
-      alert(res.data?.message || (preview ? 'Email sent. Preview opened in a new tab.' : 'Email sent'));
+      const item = list.find(i => i._id === id);
+      if (!item) return alert('Certificate not found');
+
+      const toEmail = item.students?.[0]?.email || '';
+      if (!toEmail) return alert('No recipient email found for this certificate');
+
+      const html = generateCertificateHTML(item);
+      const blob = await htmlToPdfBlob(html);
+
+      const res = await sendPdfToServer({ certificateId: id, blob, subject: 'Your Certificate', greeting: 'Congratulations on your achievement! Please find your certificate attached.', email: toEmail, orientation });
+      alert(res.message || 'Email request sent');
     } catch (err) {
-      alert(err?.response?.data?.message || err.message);
+      console.error('Email (client) failed', err);
+      alert(err?.response?.data?.message || err.message || 'Failed to send email');
     }
-  };
+  }; 
 
   const handleQuickEdit = (id) => {
     const item = list.find(i => i._id === id);
@@ -97,15 +97,14 @@ export default function ManageCertificates() {
 
   const handleDownload = async (id, orientation = 'portrait') => {
     try {
-      const response = await API.get(`/certificates/${id}/download?orientation=${orientation}`, { responseType: 'blob' });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', `certificate-${id}-${orientation}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-    } catch {
-      alert('Download failed.');
+      const item = list.find(i => i._id === id);
+      if (!item) return alert('Certificate not found');
+      const html = generateCertificateHTML(item);
+      const blob = await htmlToPdfBlob(html);
+      saveAs(blob, `certificate-${id}-${orientation}.pdf`);
+    } catch (err) {
+      console.error('Client PDF download failed', err);
+      alert('Download failed: ' + (err?.message || err));
     }
   };
 
@@ -181,7 +180,7 @@ export default function ManageCertificates() {
                 <td className="p-2 border align-top">
                   <div className="grid grid-cols-2 gap-1">
                     {/* <button onClick={()=>handleShare(item._id, 'mailto', 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button> */}
-                    <button onClick={()=>handleShare(item._id, 'send', 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button>
+                    <button onClick={()=>handleShare(item._id, 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button>
                     <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 text-white px-2 py-1 rounded">Download</button>
                     {editingId === item._id ? (
                       <>
