@@ -11,14 +11,13 @@ const certificateSchema = new mongoose.Schema({
       email: String
     },
   ],
-  // eventName removed per requirements
-  // eventType removed per requirements
+
   customTitleText: String,
   customTitleImageUrl: String,
   titleOverride: String,
   description: String,
   bodyText: String,
-  // Admin-editable simple copy
+
   collegeDescription: String,
   introLeft: String,
   introRight: String,
@@ -54,7 +53,7 @@ const certificateSchema = new mongoose.Schema({
       fontFamily: String
     }
   ],
-  // Persist per-field typography and spacing so server PDF matches preview
+
   styles: {
     collegeStyle: {
       fontFamily: String,
