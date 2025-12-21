@@ -163,9 +163,9 @@ export default function ManageCertificates() {
                 <td className="p-2 border align-top">
                   <div className="grid grid-cols-2 gap-1">
                     {/* <button onClick={()=>handleShare(item._id, 'mailto', 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button> */}
-                    <div className="flex gap-2 items-center justify-center">
-                      <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow">Download (P)</button>
-                      <button onClick={()=>handleDownload(item._id, 'landscape')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow">Download (L)</button>
+                    <div className="flex flex-col sm:flex-row gap-2 items-stretch justify-center w-full">
+                      <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow w-full sm:w-auto">Download (P)</button>
+                      <button onClick={()=>handleDownload(item._id, 'landscape')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow w-full sm:w-auto">Download (L)</button>
                     </div>
                     {editingId === item._id ? (
                       <>

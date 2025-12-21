@@ -223,15 +223,29 @@ export default function CertificatePreview({ item, onChange }) {
   const html = useMemo(() => generateCertificateHTML(item || {}), [item]);
   const [orientation, setOrientation] = useState('portrait');
 
+  // compute preview dims based on orientation
+  const previewDims = orientation === 'landscape' ? { width: 1123, height: 794 } : { width: 794, height: 1123 };
+
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
+
+    // Inject a small style to scale/center the certificate when showing landscape in the iframe
+    let htmlToWrite = html;
+    if (orientation === 'landscape') {
+      const scale = (previewDims.height / 1123).toFixed(3); // scale relative to original portrait height
+      const injectStyle = `\n<style> .certificate{transform: scale(${scale}); transform-origin: top center; margin: 0 auto;} body{display:flex;align-items:center;justify-content:center;background:#ffffff;} </style>\n`;
+      // Insert style right before </head> if present, otherwise prepend
+      if (htmlToWrite.includes('</head>')) htmlToWrite = htmlToWrite.replace('</head>', `${injectStyle}</head>`);
+      else htmlToWrite = injectStyle + htmlToWrite;
+    }
+
     doc.open();
-    doc.write(html);
+    doc.write(htmlToWrite);
     doc.close();
-  }, [html]);
+  }, [html, orientation]);
 
   const downloadPdf = async () => {
     try {
@@ -245,11 +259,21 @@ export default function CertificatePreview({ item, onChange }) {
 
   return (
     <div className="relative w-full overflow-auto">
-      <div className="relative mx-auto" style={{ width: 794 }}>
-        <iframe ref={iframeRef} title="certificate-preview" style={{ width: 794, height: 1123, border: 0, background: "transparent" }} />
+      <div className="relative mx-auto" style={{ width: '100%', maxWidth: previewDims.width }}>
+        <iframe
+          ref={iframeRef}
+          title="certificate-preview"
+          style={{
+            width: '100%',
+            maxWidth: previewDims.width,
+            aspectRatio: `${previewDims.width}/${previewDims.height}`,
+            border: 0,
+            background: 'transparent'
+          }}
+        />
       </div>
 
-      <div className="mt-4 flex gap-3 justify-center items-center">
+      <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center">
         <div className="flex items-center gap-2">
           <label className="text-sm">Orientation:</label>
           <select value={orientation} onChange={(e)=>setOrientation(e.target.value)} className="p-2 border rounded bg-white">
