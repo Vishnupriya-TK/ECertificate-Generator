@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { generateCertificateHTML } from "../utils/certificateHtml";
-import { htmlToPdfBlob, sendPdfToServer } from "../utils/pdf";
+import { htmlToPdfBlob } from "../utils/pdf";
 import { saveAs } from 'file-saver';
 
 function DirectTemplate({ item, start, end, onNameChange }) {
@@ -221,6 +221,7 @@ export default function CertificatePreview({ item, onChange }) {
   // Keep input binding for name editing via overlay, but render iframe with server-matched HTML
   const iframeRef = useRef(null);
   const html = useMemo(() => generateCertificateHTML(item || {}), [item]);
+  const [orientation, setOrientation] = useState('portrait');
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -234,26 +235,11 @@ export default function CertificatePreview({ item, onChange }) {
 
   const downloadPdf = async () => {
     try {
-      const blob = await htmlToPdfBlob(html);
-      saveAs(blob, `certificate-${item?._id || 'preview'}.pdf`);
+      const blob = await htmlToPdfBlob(html, orientation);
+      saveAs(blob, `certificate-${item?._id || 'preview'}-${orientation}.pdf`);
     } catch (err) {
       console.error('PDF export failed', err);
       alert('Failed to generate PDF: ' + (err?.message || err));
-    }
-  };
-
-  const emailPdf = async () => {
-    try {
-      const to = window.prompt('Recipient email', '');
-      if (!to) return;
-      const subject = window.prompt('Subject', 'Your Certificate') || 'Your Certificate';
-      const greeting = window.prompt('Message', `Dear ${item?.studentName || ''},\n\nPlease find your certificate attached.`) || '';
-      const blob = await htmlToPdfBlob(html);
-      const res = await sendPdfToServer({ certificateId: item?._id, blob, subject, greeting, email: to });
-      alert(res.message || 'Email sent');
-    } catch (err) {
-      console.error('Email send failed', err);
-      alert('Failed to send email: ' + (err?.response?.data?.message || err.message));
     }
   };
 
@@ -263,9 +249,15 @@ export default function CertificatePreview({ item, onChange }) {
         <iframe ref={iframeRef} title="certificate-preview" style={{ width: 794, height: 1123, border: 0, background: "transparent" }} />
       </div>
 
-      <div className="mt-4 flex gap-3 justify-center">
+      <div className="mt-4 flex gap-3 justify-center items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Orientation:</label>
+          <select value={orientation} onChange={(e)=>setOrientation(e.target.value)} className="p-1 border rounded">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
         <button type="button" className="btn" onClick={downloadPdf}>Download as PDF</button>
-        <button type="button" className="btn" onClick={emailPdf}>Email as PDF</button>
       </div>
     </div>
   );

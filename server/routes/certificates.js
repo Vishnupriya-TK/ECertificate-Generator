@@ -2,12 +2,9 @@ const express = require("express");
 const router = express.Router();
 const Certificate = require("../model/Certificate.js");
 const { protect } = require("../middleware/authMiddleware.js");
-const nodemailer = require("nodemailer");
 const puppeteer = require('puppeteer');
 const path = require('path');
 const fs = require('fs');
-const multer = require('multer');
-const upload = multer();
 
 // Helper function to get Puppeteer launch options for Render platform
 function getPuppeteerLaunchOptions() {
@@ -472,97 +469,9 @@ router.get("/:id/download", protect, async (req, res) => {
   }
 });
 
-// Share certificate via email with attached PDF
-router.post("/:id/share", protect, upload.single('pdf'), async (req, res) => {
-  try {
-    const doc = await Certificate.findById(req.params.id);
-    if (!doc) return res.status(404).json({ message: "Not found" });
-    if (doc.createdBy.toString() !== req.user._id.toString()) return res.status(403).json({ message: "Forbidden" });
-    const toEmail = (doc.students && doc.students[0] && doc.students[0].email) || req.body.email;
-    if (!toEmail) return res.status(400).json({ message: "No recipient email found" });
-
-    const greeting = req.body.greeting || `Dear ${doc.studentName},\n\nCongratulations! Please find your certificate attached.\n\nRegards,\n${doc.collegeName || 'Team'}`;
-
-    if (req.body?.dryRun) {
-      return res.json({
-        success: true,
-        message: 'Email draft generated',
-        draft: {
-          to: toEmail,
-          subject: req.body.subject || 'Your Certificate',
-          body: greeting
-        }
-      });
-    }
-
-    // If client uploaded a PDF (field name: 'pdf'), use it. Otherwise, generate PDF using Puppeteer.
-    let pdfBuffer;
-    if (req.file && req.file.buffer) {
-      pdfBuffer = req.file.buffer;
-    } else {
-      // Generate HTML
-      let html;
-      if (doc.templateKey === 'minimal') html = generateMinimalHTML(doc); else html = generateDirectHTML(doc);
-
-      // Render PDF using Puppeteer
-      const launchOptions = getPuppeteerLaunchOptions();
-      const browser = await puppeteer.launch(launchOptions);
-      const page = await browser.newPage();
-      await page.setViewport({ width: 794, height: 1123 });
-      await page.setContent(html, { waitUntil: 'load' });
-      const landscape = String(req.body?.orientation || '').toLowerCase() === 'landscape';
-      pdfBuffer = await page.pdf({
-        format: 'A4',
-        landscape,
-        printBackground: true,
-        margin: { top: 0, right: 0, bottom: 0, left: 0 },
-        preferCSSPageSize: true
-      });
-      await browser.close();
-    }
-
-    // Email transport - use env vars
-    let transporter;
-    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: Boolean(process.env.SMTP_SECURE === 'true'),
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      });
-    } else {
-      // Fallback to Ethereal for testing (avoids ECONNREFUSED on localhost)
-      const testAccount = await nodemailer.createTestAccount();
-      transporter = nodemailer.createTransport({
-        host: 'smtp.ethereal.email',
-        port: 587,
-        secure: false,
-        auth: { user: testAccount.user, pass: testAccount.pass }
-      });
-    }
-
-    const info = await transporter.sendMail({
-      from: process.env.MAIL_FROM || process.env.SMTP_USER,
-      to: toEmail,
-      subject: req.body.subject || 'Your Certificate',
-      text: greeting,
-      attachments: [{ filename: `certificate-${doc._id}.pdf`, content: pdfBuffer }]
-    });
-
-    const previewUrl = nodemailer.getTestMessageUrl?.(info);
-    res.json({ success: true, message: 'Email sent successfully', previewUrl });
-  } catch (err) {
-    console.error('Email share error:', err);
-    const errorMessage = err.message || 'Failed to send email';
-    // Provide more helpful error messages
-    if (errorMessage.includes('Chrome') || errorMessage.includes('browser')) {
-      res.status(500).json({ 
-        message: 'Chrome browser not found. Please ensure Chrome is installed via: npm run build or puppeteer browsers install chrome' 
-      });
-    } else {
-      res.status(500).json({ message: errorMessage });
-    }
-  }
+// Email sharing has been removed. Clients should use the in-browser PDF export feature.
+router.post("/:id/share", protect, async (req, res) => {
+  res.status(410).json({ message: 'Email sharing has been removed.' });
 });
 
 // Delete certificate

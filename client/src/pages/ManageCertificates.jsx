@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import API from "../utils/api";
-import { htmlToPdfBlob, sendPdfToServer } from "../utils/pdf";
+import { htmlToPdfBlob } from "../utils/pdf";
 import { generateCertificateHTML } from "../utils/certificateHtml";
 import { saveAs } from 'file-saver';
 
@@ -21,24 +21,7 @@ export default function ManageCertificates() {
 
   useEffect(()=> { fetchList(); }, []);
 
-  const handleShare = async (id, orientation = 'portrait') => {
-    try {
-      const item = list.find(i => i._id === id);
-      if (!item) return alert('Certificate not found');
-
-      const toEmail = item.students?.[0]?.email || '';
-      if (!toEmail) return alert('No recipient email found for this certificate');
-
-      const html = generateCertificateHTML(item);
-      const blob = await htmlToPdfBlob(html);
-
-      const res = await sendPdfToServer({ certificateId: id, blob, subject: 'Your Certificate', greeting: 'Congratulations on your achievement! Please find your certificate attached.', email: toEmail, orientation });
-      alert(res.message || 'Email request sent');
-    } catch (err) {
-      console.error('Email (client) failed', err);
-      alert(err?.response?.data?.message || err.message || 'Failed to send email');
-    }
-  }; 
+ 
 
   const handleQuickEdit = (id) => {
     const item = list.find(i => i._id === id);
@@ -100,7 +83,7 @@ export default function ManageCertificates() {
       const item = list.find(i => i._id === id);
       if (!item) return alert('Certificate not found');
       const html = generateCertificateHTML(item);
-      const blob = await htmlToPdfBlob(html);
+      const blob = await htmlToPdfBlob(html, orientation);
       saveAs(blob, `certificate-${id}-${orientation}.pdf`);
     } catch (err) {
       console.error('Client PDF download failed', err);
@@ -180,8 +163,10 @@ export default function ManageCertificates() {
                 <td className="p-2 border align-top">
                   <div className="grid grid-cols-2 gap-1">
                     {/* <button onClick={()=>handleShare(item._id, 'mailto', 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button> */}
-                    <button onClick={()=>handleShare(item._id, 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button>
-                    <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 text-white px-2 py-1 rounded">Download</button>
+                    <div className="flex gap-1 justify-center">
+                      <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 text-white px-2 py-1 rounded">Download (P)</button>
+                      <button onClick={()=>handleDownload(item._id, 'landscape')} className="bg-purple-600 text-white px-2 py-1 rounded">Download (L)</button>
+                    </div>
                     {editingId === item._id ? (
                       <>
                         <button onClick={()=>handleUpdate(item._id)} className="bg-green-500 text-white px-2 py-1 rounded col-span-2">Save</button>

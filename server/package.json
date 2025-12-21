@@ -23,8 +23,6 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.2",
-    "multer": "^2.0.2",
-    "nodemailer": "^7.0.9",
     "npx": "^10.2.2",
     "puppeteer": "^24.34.0",
     "uuid": "^13.0.0"
