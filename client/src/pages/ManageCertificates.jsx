@@ -114,11 +114,11 @@ export default function ManageCertificates() {
         )}
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
-            <thead><tr className="bg-gray-200"><th className="p-2 border">Name</th><th className="p-2 border">Email</th><th className="p-2 border">College</th><th className="p-2 border">Actions</th></tr></thead>
+            <thead><tr className="bg-gray-200"><th className="p-2 border">Name</th><th className="p-2 border">Email</th><th className="p-2 border">College</th><th className="p-2 border w-72">Actions</th></tr></thead>
             <tbody>
               {list.map(item => (
-                <tr key={item._id} className="text-center">
-                <td className="p-2 border">
+                <tr key={item._id}>
+                <td className="p-2 border text-left">
                   {editingId === item._id ? (
                     <input
                       value={editData.studentName}
@@ -129,7 +129,7 @@ export default function ManageCertificates() {
                     item.studentName
                   )}
                 </td>
-                <td className="p-2 border">
+                <td className="p-2 border text-left">
                   {editingId === item._id ? (
                     <input
                       value={editData.email}
@@ -141,7 +141,7 @@ export default function ManageCertificates() {
                     item.students?.[0]?.email || ''
                   )}
                 </td>
-                <td className="p-2 border">
+                <td className="p-2 border text-left">
                   {editingId === item._id ? (
                     <input
                       value={editData.collegeName}
@@ -161,25 +161,24 @@ export default function ManageCertificates() {
                     </div>
                   </td>
                 )}
-                <td className="p-2 border align-top">
-                  <div className="grid grid-cols-2 gap-1">
-                    {/* <button onClick={()=>handleShare(item._id, 'mailto', 'portrait')} className="bg-teal-500 text-white px-2 py-1 rounded">Mail</button> */}
-                    <div className="flex flex-col sm:flex-row gap-2 items-stretch justify-center w-full">
-                      <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow w-full sm:w-auto">Download (P)</button>
-                      <button onClick={()=>handleDownload(item._id, 'landscape')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md shadow w-full sm:w-auto">Download (L)</button>
-                    </div>
+                <td className="p-2 border align-middle">
+                  <div className="flex flex-wrap gap-2 justify-center items-center">
+                    <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl shadow min-w-[110px] w-full sm:w-auto text-sm font-medium">Download (P)</button>
+                    <button onClick={()=>handleDownload(item._id, 'landscape')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl shadow min-w-[110px] w-full sm:w-auto text-sm font-medium">Download (L)</button>
+
                     {editingId === item._id ? (
                       <>
-                        <button onClick={()=>handleUpdate(item._id)} className="bg-green-500 text-white px-2 py-1 rounded col-span-2">Save</button>
-                        <button onClick={handleCancelEdit} className="bg-gray-500 text-white px-2 py-1 rounded col-span-2">Cancel</button>
+                        <button onClick={()=>handleUpdate(item._id)} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl min-w-[110px] w-full sm:w-auto text-sm font-medium">Save</button>
+                        <button onClick={handleCancelEdit} className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl min-w-[110px] w-full sm:w-auto text-sm font-medium">Cancel</button>
                       </>
                     ) : (
                       <>
-                        <button onClick={()=>handleQuickEdit(item._id)} className="bg-yellow-500 text-white px-2 py-1 rounded">Quick Edit</button>
-                        <button onClick={()=>handleEdit(item._id)} className="bg-indigo-500 text-white px-2 py-1 rounded">Full Edit</button>
+                        <button onClick={()=>handleEdit(item._id)} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded-xl min-w-[110px] w-full sm:w-auto text-sm font-medium">Full Edit</button>
+                        <button onClick={()=>handleQuickEdit(item._id)} className="bg-amber-400 hover:bg-amber-500 text-black px-4 py-2 rounded-xl min-w-[110px] w-full sm:w-auto text-sm font-medium">Quick Edit</button>
                       </>
                     )}
-                    <button onClick={()=>handleDelete(item._id)} className="bg-red-500 text-white px-2 py-1 rounded col-span-2">Delete</button>
+
+                    <button onClick={()=>handleDelete(item._id)} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl min-w-[110px] w-full sm:w-auto text-sm font-medium">Delete</button>
                   </div>
                 </td>
               </tr>
