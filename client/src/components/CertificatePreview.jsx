@@ -252,12 +252,12 @@ export default function CertificatePreview({ item, onChange }) {
       <div className="mt-4 flex gap-3 justify-center items-center">
         <div className="flex items-center gap-2">
           <label className="text-sm">Orientation:</label>
-          <select value={orientation} onChange={(e)=>setOrientation(e.target.value)} className="p-1 border rounded">
+          <select value={orientation} onChange={(e)=>setOrientation(e.target.value)} className="p-2 border rounded bg-white">
             <option value="portrait">Portrait</option>
             <option value="landscape">Landscape</option>
           </select>
         </div>
-        <button type="button" className="btn" onClick={downloadPdf}>Download as PDF</button>
+        <button type="button" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow" onClick={downloadPdf}>Download as PDF</button>
       </div>
     </div>
   );

@@ -15,8 +15,29 @@ export async function htmlToPdfBlob(html, orientation = 'portrait') {
   container.style.top = '0';
   container.style.width = `${dims.width}px`;
   container.style.height = `${dims.height}px`;
+  container.style.display = 'flex';
+  container.style.justifyContent = 'center';
+  container.style.alignItems = 'center';
+  container.style.background = '#ffffff';
   container.innerHTML = html;
   document.body.appendChild(container);
+
+  // If landscape, scale the internal certificate down so the portrait layout fits nicely
+  if (orientation === 'landscape') {
+    try {
+      const cert = container.querySelector('.certificate');
+      if (cert) {
+        const originalHeight = 1123; // original portrait height used by templates
+        const scale = Math.min(1, dims.height / originalHeight);
+        cert.style.transform = `scale(${scale})`;
+        cert.style.transformOrigin = 'top center';
+        cert.style.margin = '0';
+        // Because we scaled down, ensure the container scroll area matches the target dimensions
+      }
+    } catch (e) {
+      // ignore if DOM structure differs
+    }
+  }
 
   // Render with a higher scale for better quality
   const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#ffffff', width: dims.width, height: dims.height });
