@@ -14,8 +14,8 @@ function DirectTemplate({ item, start, end, onNameChange }) {
   const signatoryStyle = styles.signatoryStyle || {};
 
   return (
-    <div className="relative w-full max-w-[900px] mx-auto shadow-2xl overflow-hidden min-h-[400px] md:min-h-[600px]" style={{ backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <div className="relative p-4 sm:p-6 lg:p-10 text-center">
+    <div className="relative mx-auto shadow-2xl overflow-hidden" style={{ width: '794px', height: '1000px', backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box' }}>
+      <div className="relative p-4 sm:p-6 lg:p-10 text-center" style={{ width: '100%', height: '100%' }}>
         {/* Header with logo and college name */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0" style={{ marginBottom: (collegeStyle.marginBottom || 15) + 'px' }}>
           {(() => {
@@ -171,9 +171,19 @@ function DirectTemplate({ item, start, end, onNameChange }) {
 // Minimal variant with solid border
 function MinimalTemplate({ item, start, end, onNameChange }) {
   return (
-    <div className="border-4 border-gray-900 p-12 w-[900px] mx-auto bg-white text-center rounded" style={{ backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <div className="flex justify-between mb-6">
-        {(item?.logos || []).slice(0,3).map((url,idx)=> (<img key={idx} src={url} alt="logo" className="h-10 object-contain" />))}
+    <div className="border-4 border-gray-900 p-8 mx-auto bg-white text-center rounded" style={{ width: '794px', height: '1000px', backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box' }}>
+      <div className="flex items-center mb-6" style={{ justifyContent: (item?.logos || []).filter(Boolean).length === 1 ? 'flex-start' : 'space-between' }}>
+        {(() => {
+          const l = (item?.logos || []).filter(Boolean);
+          if (l.length === 0) return <div className="flex-1 text-center font-semibold">{item?.collegeName}</div>;
+          if (l.length === 1) return (
+            <div className="w-full flex items-center gap-3">
+              <img src={l[0]} alt="logo" className="h-10 object-contain" />
+              <div className="font-semibold text-left">{item?.collegeName}</div>
+            </div>
+          );
+          return l.slice(0,3).map((url,idx)=> (<img key={idx} src={url} alt="logo" className="h-10 object-contain" />));
+        })()}
       </div>
       {item?.customTitleImageUrl ? (
         <img src={item.customTitleImageUrl} alt="title" className="h-12 mx-auto" />
