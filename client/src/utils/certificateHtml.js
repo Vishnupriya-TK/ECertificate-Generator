@@ -45,12 +45,12 @@ export function generateDirectHTML(doc) {
 				<style>
 					@page { size: A4; margin: 0 }
 					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
-					/* A4 portrait at ~96dpi: 794x1123px */
-					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
-					.content { position: relative; padding: 40px; text-align: center; }
-					.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: ${collegeStyle.marginBottom || 15}px; }
+					/* A4 portrait content at app scale: 794x1000px (reduced height) */
+					.certificate { position: relative; width: 794px; height: 1000px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
+					.content { position: relative; padding: 30px; text-align: center; }
+					.header { display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: ${collegeStyle.marginBottom || 15}px; }
 					.logo { height: 56px; object-fit: contain; }
-					.college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${Math.max(12, (collegeStyle.fontSize || 18) * 0.8)}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'left'}; margin-top: ${collegeStyle.marginTop || 5}px; font-weight: bold; }
+					.college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${Math.max(12, (collegeStyle.fontSize || 18) * 0.8)}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; margin-top: ${collegeStyle.marginTop || 5}px; font-weight: bold; }
 					.college-desc { font-family: ${collegeDescStyle.fontFamily || 'inherit'}; font-size: ${collegeDescStyle.fontSize || 14}px; line-height: ${collegeDescStyle.lineHeight || 1.3}; text-align: ${collegeDescStyle.align || 'center'}; width: ${collegeDescStyle.width || 80}%; margin: ${collegeDescStyle.marginTop || 5}px auto ${collegeDescStyle.marginBottom || 20}px auto; }
 					.title { font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 48}px; line-height: ${titleStyle.lineHeight || 1.3}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 800; color: #1e40af; letter-spacing: 0.025em; }
 					.title-image { height: 48px; object-fit: contain; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; }
@@ -71,14 +71,12 @@ export function generateDirectHTML(doc) {
 				<div class="certificate" style="background-image: ${doc.backgroundUrl ? `url(${doc.backgroundUrl})` : 'none'};">
 					<div class="content">
 						<div class="header">
-							<div style="display: flex; align-items: center; gap: 12px;">
-								${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-								<div class="college-name">
-									<div>${doc.collegeName || ''}</div>
-								</div>
-							</div>
-							${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
-						</div>
+				${(() => {
+					const l = (doc.logos || []).filter(Boolean);
+					if (l.length === 0) return `<div class="college-name">${doc.collegeName || ''}</div>`;
+					if (l.length === 1) return `<div style="display:flex;align-items:center;gap:12px;"><img src="${l[0]}" alt="logo" class="logo" /><div class="college-name">${doc.collegeName || ''}</div></div>`;
+					return `<div style="display:flex;align-items:center;gap:12px;">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="college-name">${doc.collegeName || ''}</div><div style="display:flex;align-items:center;gap:12px;">${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}</div>`;
+				})()}
 
 						${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 
@@ -153,8 +151,8 @@ export function generateMinimalHTML(doc) {
 				<style>
 					@page { size: A4; margin: 0 }
 					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
-					/* A4 portrait content area */
-					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background: white; padding: 40px; text-align: center; box-sizing: border-box; }
+			/* A4 portrait content area (reduced height) */
+			.certificate { position: relative; width: 794px; height: 1000px; margin: 0 auto; background: white; padding: 30px; text-align: center; box-sizing: border-box; }
 					.header { margin-bottom: 30px; display:flex; justify-content: space-between; align-items:center; }
 					.logo { height: 60px; object-fit: contain; margin-bottom: 0; }
 					.college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize }px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; font-weight: bold; color: #1f2937; }
@@ -177,10 +175,12 @@ export function generateMinimalHTML(doc) {
 			<body>
 				<div class="certificate">
 					<div class="header">
-						${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-						<div class="college-name">${doc.collegeName || ''}</div>
-						${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
-					</div>
+				${(() => {
+					const l = (doc.logos || []).filter(Boolean);
+					if (l.length === 0) return `<div class="college-name">${doc.collegeName || ''}</div>`;
+					if (l.length === 1) return `<div style="display:flex;align-items:center;gap:12px;"><img src="${l[0]}" alt="logo" class="logo" /><div class="college-name">${doc.collegeName || ''}</div></div>`;
+					return `${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}<div class="college-name">${doc.collegeName || ''}</div>${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}`;
+				})()}
 
 					${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 

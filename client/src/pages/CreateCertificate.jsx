@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import API from "../utils/api";
 import CertificatePreview from "../components/CertificatePreview";
+import { generateCertificateHTML } from "../utils/certificateHtml";
+import { htmlToPdfBlob } from "../utils/pdf";
+import { saveAs } from 'file-saver';
 
 export default function CreateCertificate() {
   const [college, setCollege] = useState("");
@@ -99,264 +102,7 @@ export default function CreateCertificate() {
         <input value={college} onChange={(e)=>setCollege(e.target.value)} placeholder="College name" className="w-full p-2 border rounded" style={{ fontFamily: collegeStyle.fontFamily || 'Arial, Helvetica, sans-serif' }} />
         <textarea value={collegeDescription} onChange={(e)=>setCollegeDescription(e.target.value)} placeholder="College description (appears at top)" className="w-full p-2 border rounded" rows="2" style={{ fontFamily: collegeDescStyle.fontFamily || 'Arial, Helvetica, sans-serif' }} />
         
-        {/* College Name Styling */}
-        <div className="space-y-2">
-          <h4 className="font-semibold">College Name Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={collegeStyle.fontFamily} onChange={(e)=>setCollegeStyle({...collegeStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-              <option value="Poppins, sans-serif">Poppins</option>
-              <option value="Roboto, sans-serif">Roboto</option>
-              <option value="Merriweather, serif">Merriweather</option>
-              <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Arial, Helvetica, sans-serif">Arial</option>
-            </select>
-            <select value={collegeStyle.fontSize} onChange={(e)=>setCollegeStyle({...collegeStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={collegeStyle.lineHeight} onChange={(e)=>setCollegeStyle({...collegeStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={collegeStyle.width} onChange={(e)=>setCollegeStyle({...collegeStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={collegeStyle.align} onChange={(e)=>setCollegeStyle({...collegeStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={collegeStyle.marginTop} onChange={(e)=>setCollegeStyle({...collegeStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={collegeStyle.marginBottom} onChange={(e)=>setCollegeStyle({...collegeStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-            </select>
-          </div>
-        </div>
 
-        {/* College Description Styling */}
-        <div className="space-y-2">
-          <h4 className="font-semibold">College Description Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={collegeDescStyle.fontFamily} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-              <option value="Poppins, sans-serif">Poppins</option>
-              <option value="Roboto, sans-serif">Roboto</option>
-              <option value="Merriweather, serif">Merriweather</option>
-              <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Arial, Helvetica, sans-serif">Arial</option>
-            </select>
-            <select value={collegeDescStyle.fontSize} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={collegeDescStyle.lineHeight} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={collegeDescStyle.width} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={collegeDescStyle.align} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={collegeDescStyle.marginTop} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={collegeDescStyle.marginBottom} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Title Styling */}
-        <div className="space-y-2">
-          <h4 className="font-semibold">Title Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={titleStyle.fontFamily} onChange={(e)=>setTitleStyle({...titleStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-            <option value="Poppins, sans-serif">Poppins</option>
-            <option value="Roboto, sans-serif">Roboto</option>
-            <option value="Merriweather, serif">Merriweather</option>
-            <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value="Arial, Helvetica, sans-serif">Arial</option>
-          </select>
-            <select value={titleStyle.fontSize} onChange={(e)=>setTitleStyle({...titleStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={titleStyle.lineHeight} onChange={(e)=>setTitleStyle({...titleStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={titleStyle.width} onChange={(e)=>setTitleStyle({...titleStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={titleStyle.align} onChange={(e)=>setTitleStyle({...titleStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={titleStyle.marginTop} onChange={(e)=>setTitleStyle({...titleStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30,35,40].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={titleStyle.marginBottom} onChange={(e)=>setTitleStyle({...titleStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30,35,40].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Student Name Styling */}
-        <div className="space-y-2">
-          <h4 className="font-semibold">Student Name Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={nameStyle.fontFamily} onChange={(e)=>setNameStyle({...nameStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-              <option value="Poppins, sans-serif">Poppins</option>
-              <option value="Roboto, sans-serif">Roboto</option>
-              <option value="Merriweather, serif">Merriweather</option>
-              <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Arial, Helvetica, sans-serif">Arial</option>
-            </select>
-            <select value={nameStyle.fontSize} onChange={(e)=>setNameStyle({...nameStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={nameStyle.lineHeight} onChange={(e)=>setNameStyle({...nameStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={nameStyle.width} onChange={(e)=>setNameStyle({...nameStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={nameStyle.align} onChange={(e)=>setNameStyle({...nameStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={nameStyle.marginTop} onChange={(e)=>setNameStyle({...nameStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={nameStyle.marginBottom} onChange={(e)=>setNameStyle({...nameStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-        </select>
-          </div>
-        </div>
-
-        {/* Intro Text Styling */}
-          <div className="space-y-2">
-          <h4 className="font-semibold">Intro Text Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={introStyle.fontFamily} onChange={(e)=>setIntroStyle({...introStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-              <option value="Poppins, sans-serif">Poppins</option>
-              <option value="Roboto, sans-serif">Roboto</option>
-              <option value="Merriweather, serif">Merriweather</option>
-              <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Arial, Helvetica, sans-serif">Arial</option>
-            </select>
-            <select value={introStyle.fontSize} onChange={(e)=>setIntroStyle({...introStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={introStyle.lineHeight} onChange={(e)=>setIntroStyle({...introStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={introStyle.width} onChange={(e)=>setIntroStyle({...introStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={introStyle.align} onChange={(e)=>setIntroStyle({...introStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={introStyle.marginTop} onChange={(e)=>setIntroStyle({...introStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={introStyle.marginBottom} onChange={(e)=>setIntroStyle({...introStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Event Description Styling */}
-        <div className="space-y-2">
-          <h4 className="font-semibold">Event Description Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={eventDescStyle.fontFamily} onChange={(e)=>setEventDescStyle({...eventDescStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-              <option value="Poppins, sans-serif">Poppins</option>
-              <option value="Roboto, sans-serif">Roboto</option>
-              <option value="Merriweather, serif">Merriweather</option>
-              <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Arial, Helvetica, sans-serif">Arial</option>
-            </select>
-            <select value={eventDescStyle.fontSize} onChange={(e)=>setEventDescStyle({...eventDescStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={eventDescStyle.lineHeight} onChange={(e)=>setEventDescStyle({...eventDescStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={eventDescStyle.width} onChange={(e)=>setEventDescStyle({...eventDescStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={eventDescStyle.align} onChange={(e)=>setEventDescStyle({...eventDescStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={eventDescStyle.marginTop} onChange={(e)=>setEventDescStyle({...eventDescStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={eventDescStyle.marginBottom} onChange={(e)=>setEventDescStyle({...eventDescStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-            </select>
-          </div>
-        </div>
-
-        {/* Signatory Styling */}
-        <div className="space-y-2">
-          <h4 className="font-semibold">Signatory Style</h4>
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
-            <select value={signatoryStyle.fontFamily} onChange={(e)=>setSignatoryStyle({...signatoryStyle, fontFamily: e.target.value})} className="p-2 border rounded">
-              <option value="">Font</option>
-              <option value="Poppins, sans-serif">Poppins</option>
-              <option value="Roboto, sans-serif">Roboto</option>
-              <option value="Merriweather, serif">Merriweather</option>
-              <option value="Montserrat, sans-serif">Montserrat</option>
-              <option value="Times New Roman, serif">Times</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="Arial, Helvetica, sans-serif">Arial</option>
-            </select>
-            <select value={signatoryStyle.fontSize} onChange={(e)=>setSignatoryStyle({...signatoryStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
-              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
-            </select>
-            <select value={signatoryStyle.lineHeight} onChange={(e)=>setSignatoryStyle({...signatoryStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
-              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
-            <select value={signatoryStyle.width} onChange={(e)=>setSignatoryStyle({...signatoryStyle, width: Number(e.target.value)})} className="p-2 border rounded">
-              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
-            </select>
-            <select value={signatoryStyle.align} onChange={(e)=>setSignatoryStyle({...signatoryStyle, align: e.target.value})} className="p-2 border rounded">
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-            <select value={signatoryStyle.marginTop} onChange={(e)=>setSignatoryStyle({...signatoryStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,10,20,30,40,50,60,70,80].map(n=> <option key={n} value={n}>↑{n}px</option>)}
-            </select>
-            <select value={signatoryStyle.marginBottom} onChange={(e)=>setSignatoryStyle({...signatoryStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
-              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
-            </select>
-            </div>
-        </div>
 
         <div className="grid grid-cols-2 gap-2">
           <input value={introLeft} onChange={(e)=>setIntroLeft(e.target.value)} placeholder="Intro left (e.g., This is to certify...)" className="p-2 border rounded" />
@@ -427,8 +173,279 @@ export default function CreateCertificate() {
           <div className="space-y-2">
             <a href="/template.csv" download className="inline-block px-3 py-1 bg-blue-500 text-white rounded">Download CSV Template</a>
             <input type="file" accept=".csv" onChange={handleCSV} className="p-2 border rounded" />
+            {students && students.length > 0 ? (
+              <button type="button" onClick={async ()=>{
+                if (!students || students.length === 0) return alert('No students parsed');
+                for (let i=0;i<students.length;i++){
+                  const s = students[i];
+                  const item = {
+                    studentName: s.name || `student-${i+1}`,
+                    collegeName: college,
+                    collegeDescription,
+                    logos,
+                    templateKey,
+                    backgroundUrl,
+                    titleOverride,
+                    introLeft,
+                    introRight,
+                    eventDescription,
+                    studentCollege,
+                    signatories,
+                    styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, signatoryStyle }
+                  };
+                  try {
+                    const html = generateCertificateHTML(item);
+                    const blob = await htmlToPdfBlob(html);
+                    saveAs(blob, `certificate-${(s.name || `student-${i+1}`).replace(/\s+/g,'_')}.pdf`);
+                    // small delay to avoid overwhelming the browser
+                    await new Promise(r => setTimeout(r, 250));
+                  } catch (e) { console.error('Failed to generate PDF for', s, e); }
+                }
+              }} className="inline-block px-3 py-1 bg-purple-600 text-white rounded">Download all PDFs</button>
+            ) : null}
           </div>
         )}
+
+        {/* STYLE OPTIONS (moved below other inputs) */}
+        <div className="space-y-2">
+          <h4 className="font-semibold">College Name Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={collegeStyle.fontFamily} onChange={(e)=>setCollegeStyle({...collegeStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={collegeStyle.fontSize} onChange={(e)=>setCollegeStyle({...collegeStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={collegeStyle.lineHeight} onChange={(e)=>setCollegeStyle({...collegeStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={collegeStyle.width} onChange={(e)=>setCollegeStyle({...collegeStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={collegeStyle.align} onChange={(e)=>setCollegeStyle({...collegeStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={collegeStyle.marginTop} onChange={(e)=>setCollegeStyle({...collegeStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={collegeStyle.marginBottom} onChange={(e)=>setCollegeStyle({...collegeStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">College Description Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={collegeDescStyle.fontFamily} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={collegeDescStyle.fontSize} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={collegeDescStyle.lineHeight} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={collegeDescStyle.width} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={collegeDescStyle.align} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={collegeDescStyle.marginTop} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={collegeDescStyle.marginBottom} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">Title Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={titleStyle.fontFamily} onChange={(e)=>setTitleStyle({...titleStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+            <option value="Poppins, sans-serif">Poppins</option>
+            <option value="Roboto, sans-serif">Roboto</option>
+            <option value="Merriweather, serif">Merriweather</option>
+            <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Arial, Helvetica, sans-serif">Arial</option>
+          </select>
+            <select value={titleStyle.fontSize} onChange={(e)=>setTitleStyle({...titleStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={titleStyle.lineHeight} onChange={(e)=>setTitleStyle({...titleStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={titleStyle.width} onChange={(e)=>setTitleStyle({...titleStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={titleStyle.align} onChange={(e)=>setTitleStyle({...titleStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={titleStyle.marginTop} onChange={(e)=>setTitleStyle({...titleStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30,35,40].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={titleStyle.marginBottom} onChange={(e)=>setTitleStyle({...titleStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30,35,40].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">Student Name Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={nameStyle.fontFamily} onChange={(e)=>setNameStyle({...nameStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={nameStyle.fontSize} onChange={(e)=>setNameStyle({...nameStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={nameStyle.lineHeight} onChange={(e)=>setNameStyle({...nameStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={nameStyle.width} onChange={(e)=>setNameStyle({...nameStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={nameStyle.align} onChange={(e)=>setNameStyle({...nameStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={nameStyle.marginTop} onChange={(e)=>setNameStyle({...nameStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={nameStyle.marginBottom} onChange={(e)=>setNameStyle({...nameStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">Intro Text Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={introStyle.fontFamily} onChange={(e)=>setIntroStyle({...introStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={introStyle.fontSize} onChange={(e)=>setIntroStyle({...introStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={introStyle.lineHeight} onChange={(e)=>setIntroStyle({...introStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={introStyle.width} onChange={(e)=>setIntroStyle({...introStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={introStyle.align} onChange={(e)=>setIntroStyle({...introStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={introStyle.marginTop} onChange={(e)=>setIntroStyle({...introStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={introStyle.marginBottom} onChange={(e)=>setIntroStyle({...introStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">Event Description Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={eventDescStyle.fontFamily} onChange={(e)=>setEventDescStyle({...eventDescStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={eventDescStyle.fontSize} onChange={(e)=>setEventDescStyle({...eventDescStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={eventDescStyle.lineHeight} onChange={(e)=>setEventDescStyle({...eventDescStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={eventDescStyle.width} onChange={(e)=>setEventDescStyle({...eventDescStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={eventDescStyle.align} onChange={(e)=>setEventDescStyle({...eventDescStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={eventDescStyle.marginTop} onChange={(e)=>setEventDescStyle({...eventDescStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={eventDescStyle.marginBottom} onChange={(e)=>setEventDescStyle({...eventDescStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">Signatory Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={signatoryStyle.fontFamily} onChange={(e)=>setSignatoryStyle({...signatoryStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={signatoryStyle.fontSize} onChange={(e)=>setSignatoryStyle({...signatoryStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={signatoryStyle.lineHeight} onChange={(e)=>setSignatoryStyle({...signatoryStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={signatoryStyle.width} onChange={(e)=>setSignatoryStyle({...signatoryStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={signatoryStyle.align} onChange={(e)=>setSignatoryStyle({...signatoryStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={signatoryStyle.marginTop} onChange={(e)=>setSignatoryStyle({...signatoryStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,10,20,30,40,50,60,70,80].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={signatoryStyle.marginBottom} onChange={(e)=>setSignatoryStyle({...signatoryStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+        </div>
 
         <button onClick={submit} className="w-full bg-blue-600 text-white p-2 rounded">Generate</button>
       </div>
