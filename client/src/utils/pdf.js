@@ -1,13 +1,14 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-// Convert HTML string to a PDF blob sized to A4 (794x1000px used by the app preview - reduced height)
+// Convert HTML string to a PDF blob sized to A4 (794x1123px used by the app preview)
 export async function htmlToPdfBlob(html, orientation = 'portrait') {
   // Choose dimensions for A4 at ~96dpi
-  // Always generate portrait sized A4 at the app scale (reduced height)
-  const dims = { width: 794, height: 1000 };
+  const portrait = { width: 794, height: 1123 };
+  const landscape = { width: 1123, height: 794 };
+  const dims = orientation === 'landscape' ? landscape : portrait;
 
-  // Create offscreen container sized for portrait
+  // Create offscreen container sized for orientation
   const container = document.createElement('div');
   container.style.position = 'fixed';
   container.style.left = '-9999px';
@@ -21,55 +22,79 @@ export async function htmlToPdfBlob(html, orientation = 'portrait') {
   container.innerHTML = html;
   document.body.appendChild(container);
 
-  // Ensure content is centered/fitted in portrait fallback if required
-  try {
-    // Parse the HTML to avoid nested <html>/<body> interfering with layout and prefer the .certificate element
-    const parser = new DOMParser();
-    const docFrag = parser.parseFromString(html, 'text/html');
-    const certEl = docFrag.querySelector('.certificate');
+  // Content-aware fitting for landscape (reduce blank margins and crop to visible content)
+  if (orientation === 'landscape') {
+    try {
+      // wait for images to load
+      const imgs = Array.from(container.querySelectorAll('img'));
+      await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; })));
+      // small delay for fonts/images
+      await new Promise((r) => setTimeout(r, 50));
 
-    // Wait for image assets referenced by the certificate to load
-    const imgs = [];
-    if (certEl) {
-      Array.from(certEl.querySelectorAll('img')).forEach((imgNode) => {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.src = imgNode.src;
-        imgs.push(img);
-      });
-    } else {
-      Array.from(container.querySelectorAll('img')).forEach((i) => imgs.push(i));
-    }
-    await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; })));
-    await new Promise((r) => setTimeout(r, 30));
-
-    // If we parsed a certificate element, replace the container content with it so it occupies the container exactly
-    if (certEl) {
-      container.innerHTML = '';
-      const cloned = certEl.cloneNode(true);
-      cloned.style.width = '100%';
-      cloned.style.height = '100%';
-      cloned.style.margin = '0';
-      cloned.style.transform = 'none';
-      cloned.style.boxSizing = 'border-box';
-      container.appendChild(cloned);
-    } else {
       const cert = container.querySelector('.certificate');
       if (cert) {
-        cert.style.width = '100%';
-        cert.style.height = '100%';
+        const elRect = cert.getBoundingClientRect();
+        // compute bounding box of visible children
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        const children = cert.querySelectorAll('*');
+        children.forEach((ch) => {
+          const r = ch.getBoundingClientRect();
+          if (r.width > 2 && r.height > 2) {
+            minX = Math.min(minX, r.left);
+            minY = Math.min(minY, r.top);
+            maxX = Math.max(maxX, r.right);
+            maxY = Math.max(maxY, r.bottom);
+          }
+        });
+
+        if (!isFinite(minX)) {
+          // fallback to full certificate
+          minX = elRect.left; minY = elRect.top; maxX = elRect.right; maxY = elRect.bottom;
+        }
+
+        const contentW = maxX - minX;
+        const contentH = maxY - minY;
+        const margin = 24; // keep a small margin in px
+        const scale = Math.min((dims.width - margin * 2) / contentW, (dims.height - margin * 2) / contentH) * 0.95;
+
+        // Build a clean wrapper and a trimmed clone to avoid side-effects
+        const wrapper = document.createElement('div');
+        wrapper.style.width = `${dims.width}px`;
+        wrapper.style.height = `${dims.height}px`;
+        wrapper.style.display = 'flex';
+        wrapper.style.justifyContent = 'center';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.overflow = 'hidden';
+        wrapper.style.background = '#ffffff';
+
+        const clone = cert.cloneNode(true);
+        // shift clone so the content bounding box aligns with origin, then scale
+        clone.style.margin = `-${Math.round(minY - elRect.top)}px 0 0 -${Math.round(minX - elRect.left)}px`;
+        clone.style.transformOrigin = 'top left';
+        clone.style.transform = `scale(${scale})`;
+        clone.style.display = 'block';
+
+        // replace container contents with wrapper
+        container.innerHTML = '';
+        wrapper.appendChild(clone);
+        container.appendChild(wrapper);
+      }
+    } catch (e) {
+      // If anything fails, fallback to simple centering
+      const cert = container.querySelector('.certificate');
+      if (cert) {
+        const originalWidth = 794;
+        const originalHeight = 1123;
+        const scale = Math.min(dims.width / originalWidth, dims.height / originalHeight) * 0.95;
+        cert.style.transform = `scale(${scale})`;
+        cert.style.transformOrigin = 'center center';
         cert.style.margin = '0';
-        cert.style.transform = 'none';
-        cert.style.boxSizing = 'border-box';
+        container.style.display = 'flex';
+        container.style.justifyContent = 'center';
+        container.style.alignItems = 'center';
+        container.style.overflow = 'hidden';
       }
     }
-
-    container.style.display = 'flex';
-    container.style.justifyContent = 'center';
-    container.style.alignItems = 'center';
-    container.style.overflow = 'hidden';
-  } catch (e) {
-    // ignore and fallback to default rendering
   }
 
   // Render with a higher scale for better quality
@@ -77,7 +102,7 @@ export async function htmlToPdfBlob(html, orientation = 'portrait') {
   const imgData = canvas.toDataURL('image/png');
 
   // Create PDF with jsPDF using px units and exact pixel dimensions
-  const pdf = new jsPDF({ unit: 'px', format: [dims.width, dims.height], orientation: 'portrait' });
+  const pdf = new jsPDF({ unit: 'px', format: [dims.width, dims.height], orientation: orientation === 'landscape' ? 'landscape' : 'portrait' });
   pdf.addImage(imgData, 'PNG', 0, 0, dims.width, dims.height);
 
   const blob = pdf.output('blob');

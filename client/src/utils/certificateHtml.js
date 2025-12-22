@@ -10,7 +10,6 @@ function buildGoogleFontsLink(doc) {
 		styles.introStyle?.fontFamily,
 		styles.eventDescStyle?.fontFamily,
 		styles.signatoryStyle?.fontFamily,
-		styles.studentCollegeStyle?.fontFamily,
 	]
 		.filter(Boolean)
 		.map((f) => String(f).split(',')[0].trim().replace(/"|'|/g, ''));
@@ -31,7 +30,6 @@ export function generateDirectHTML(doc) {
 	const introStyle = styles.introStyle || {};
 	const eventDescStyle = styles.eventDescStyle || {};
 	const signatoryStyle = styles.signatoryStyle || {};
-	const studentCollegeStyle = styles.studentCollegeStyle || {};
 
 	const start = "";
 	const end = "";
@@ -47,20 +45,18 @@ export function generateDirectHTML(doc) {
 				<style>
 					@page { size: A4; margin: 0 }
 					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
-					/* A4 portrait content at app scale: 794x1000px (reduced height) */
-					.certificate { position: relative; width: 794px; height: 1000px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
-					.content { position: relative; padding: 30px; text-align: center; }
-					.header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: ${collegeStyle.marginBottom || 15}px; }
-					.header-left, .header-right { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
-					.header-center { flex:1 1 auto; }
+					/* A4 portrait at ~96dpi: 794x1123px */
+					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
+					.content { position: relative; padding: 40px; text-align: center; }
+					.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: ${collegeStyle.marginBottom || 15}px; }
 					.logo { height: 56px; object-fit: contain; }
-					.college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${Math.max(12, (collegeStyle.fontSize || 18) * 0.8)}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; margin-top: ${collegeStyle.marginTop || 5}px; font-weight: bold; }
+					.college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${Math.max(12, (collegeStyle.fontSize || 18) * 0.8)}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'left'}; margin-top: ${collegeStyle.marginTop || 5}px; font-weight: bold; }
 					.college-desc { font-family: ${collegeDescStyle.fontFamily || 'inherit'}; font-size: ${collegeDescStyle.fontSize || 14}px; line-height: ${collegeDescStyle.lineHeight || 1.3}; text-align: ${collegeDescStyle.align || 'center'}; width: ${collegeDescStyle.width || 80}%; margin: ${collegeDescStyle.marginTop || 5}px auto ${collegeDescStyle.marginBottom || 20}px auto; }
-					.student-college { font-family: ${studentCollegeStyle.fontFamily || 'inherit'}; font-size: ${studentCollegeStyle.fontSize || 14}px; line-height: ${studentCollegeStyle.lineHeight || 1.3}; text-align: ${studentCollegeStyle.align || 'center'}; margin-top: ${studentCollegeStyle.marginTop || 4}px; }
 					.title { font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 48}px; line-height: ${titleStyle.lineHeight || 1.3}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 800; color: #1e40af; letter-spacing: 0.025em; }
 					.title-image { height: 48px; object-fit: contain; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; }
 					.intro { width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 16}px; line-height: ${introStyle.lineHeight || 1.4}; }
 					.student-name { font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${Math.max(20, (nameStyle.fontSize || 44) * 0.7)}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 900; background: transparent; border: none; outline: none; min-width: 200px; }
+					.student-college { font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 14}px; text-align: ${introStyle.align || 'center'}; margin-top: 4px; }
 					.event-desc { width: ${eventDescStyle.width || 80}%; margin: ${eventDescStyle.marginTop || 10}px auto ${eventDescStyle.marginBottom || 10}px auto; font-family: ${eventDescStyle.fontFamily || 'inherit'}; font-size: ${eventDescStyle.fontSize || 16}px; line-height: ${eventDescStyle.lineHeight || 1.4}; text-align: ${eventDescStyle.align || 'center'}; }
 					.event-dates { font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 16}px; text-align: ${introStyle.align || 'center'}; margin: 10px 0; }
 					.signatories { display: grid; grid-template-columns: repeat(2, 1fr); gap: 40px; width: ${signatoryStyle.width || 80}%; margin: ${signatoryStyle.marginTop || 40}px auto ${signatoryStyle.marginBottom || 10}px auto; }
@@ -75,11 +71,19 @@ export function generateDirectHTML(doc) {
 				<div class="certificate" style="background-image: ${doc.backgroundUrl ? `url(${doc.backgroundUrl})` : 'none'};">
 					<div class="content">
 						<div class="header">
-				${(() => {
-					const l = (doc.logos || []).filter(Boolean);
-						if (l.length === 1) return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center" style="text-align:left"><div class="college-name" style="text-align:left">${doc.collegeName || ''}</div>${doc.collegeDescription ? `<div class="college-desc" style="text-align:left">${doc.collegeDescription}</div>` : ''}</div><div class="header-right"></div>`;
-						return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center"><div class="college-name">${doc.collegeName || ''}</div>${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}</div><div class="header-right">${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}</div>`;
-					})()}
+							<div style="display: flex; align-items: center; gap: 12px;">
+								${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
+								<div class="college-name">
+									<div>${doc.collegeName || ''}</div>
+								</div>
+							</div>
+							${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
+						</div>
+
+						${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
+
+						${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style="font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 48}px; line-height: ${titleStyle.lineHeight || 1.3}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 800; color: #1e40af; letter-spacing: 0.025em;">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
+
 						<div style="width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 16}px; line-height: ${introStyle.lineHeight || 1.4};">
 							<span>${doc.introLeft || "This is to certify that Mr./Ms."} </span>
 							<span style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${Math.max(20, (nameStyle.fontSize || 44) * 0.7)}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 900;">${doc.studentName || ''}</span>
@@ -134,7 +138,6 @@ export function generateMinimalHTML(doc) {
 	const introStyle = styles.introStyle || {};
 	const eventDescStyle = styles.eventDescStyle || {};
 	const signatoryStyle = styles.signatoryStyle || {};
-	const studentCollegeStyle = styles.studentCollegeStyle || {};
 
 	const start = "";
 	const end = "";
@@ -150,15 +153,12 @@ export function generateMinimalHTML(doc) {
 				<style>
 					@page { size: A4; margin: 0 }
 					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
-			/* A4 portrait content area (reduced height) */
-			.certificate { position: relative; width: 794px; height: 1000px; margin: 0 auto; background: white; padding: 30px; text-align: center; box-sizing: border-box; }
-					.header { margin-bottom: 30px; display:flex; align-items:center; justify-content:space-between; }
-					.header-left, .header-right { display:flex; align-items:center; gap:12px; flex:0 0 auto; }
-					.header-center { flex:1 1 auto; }
+					/* A4 portrait content area */
+					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background: white; padding: 40px; text-align: center; box-sizing: border-box; }
+					.header { margin-bottom: 30px; display:flex; justify-content: space-between; align-items:center; }
 					.logo { height: 60px; object-fit: contain; margin-bottom: 0; }
 					.college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize }px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; font-weight: bold; color: #1f2937; }
 					.college-desc { font-family: ${collegeDescStyle.fontFamily }; font-size: ${collegeDescStyle.fontSize }px; line-height: ${collegeDescStyle.lineHeight || 1.5}; text-align: ${collegeDescStyle.align || 'center'}; width: ${collegeDescStyle.width || 80}%; margin: ${collegeDescStyle.marginTop || 10}px auto ${collegeDescStyle.marginBottom || 20}px auto; color: #6b7280; }
-					.student-college { font-family: ${studentCollegeStyle.fontFamily || 'inherit'}; font-size: ${studentCollegeStyle.fontSize || 16}px; line-height: ${studentCollegeStyle.lineHeight || 1.2}; text-align: ${studentCollegeStyle.align || 'center'}; margin-top: ${studentCollegeStyle.marginTop || 8}px; color: #6b7280; }
 					.title { font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af; }
 					.title-image { height: 48px; object-fit: contain; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; }
 					.intro { width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 18}px; line-height: ${introStyle.lineHeight || 1.5}; color: #374151; }
@@ -177,11 +177,15 @@ export function generateMinimalHTML(doc) {
 			<body>
 				<div class="certificate">
 					<div class="header">
-				${(() => {
-					const l = (doc.logos || []).filter(Boolean);
-					if (l.length === 1) return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center" style="text-align:left"><div class="college-name" style="text-align:left">${doc.collegeName || ''}</div>${doc.collegeDescription ? `<div class="college-desc" style="text-align:left">${doc.collegeDescription}</div>` : ''}</div><div class="header-right"></div>`;
-					return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center"><div class="college-name">${doc.collegeName || ''}</div>${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}</div><div class="header-right">${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}</div>`;
-			})()}
+						${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
+						<div class="college-name">${doc.collegeName || ''}</div>
+						${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
+					</div>
+
+					${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
+
+					${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style=\"font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af;\">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
+
 					<div style="width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 18}px; line-height: ${introStyle.lineHeight || 1.5}; color: #374151;">
 						<span>${doc.introLeft || "This is to certify that"} </span>
 						<div style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${nameStyle.fontSize || 32}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 800;">${doc.studentName || ''}</div>

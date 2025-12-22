@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { generateCertificateHTML } from "../utils/certificateHtml";
 import { htmlToPdfBlob } from "../utils/pdf";
 import { saveAs } from 'file-saver';
@@ -12,33 +12,44 @@ function DirectTemplate({ item, start, end, onNameChange }) {
   const introStyle = styles.introStyle || {};
   const eventDescStyle = styles.eventDescStyle || {};
   const signatoryStyle = styles.signatoryStyle || {};
-  const studentCollegeStyle = styles.studentCollegeStyle || {};
-  const logos = (item?.logos || []).filter(Boolean);
 
   return (
-    <div className="relative mx-auto shadow-2xl overflow-hidden" style={{ width: '794px', height: '1000px', backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box' }}>
-      <div className="relative p-4 sm:p-6 lg:p-10 text-center" style={{ width: '100%', height: '100%' }}>
-        {/* Header with logo and college name (3-column) */}
-        <div className="flex items-center" style={{ marginBottom: (collegeStyle.marginBottom || 15) + 'px', justifyContent: logos.length === 1 ? 'flex-start' : 'space-between' }}>
-          {(() => {
-            const l = (item?.logos || []).filter(Boolean);
-            return (
-              <>
-                <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {l[0] ? <img src={l[0]} alt="logo-left" className="h-10 sm:h-12 lg:h-14 object-contain" /> : null}
-                </div>
-                <div className="header-center" style={{ flex: 1, textAlign: logos.length === 1 ? 'left' : (collegeStyle.align || 'center'), marginLeft: 8, marginRight: 8 }}>
-                  <div className="font-semibold" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>{item?.collegeName}</div>
-                  {item?.collegeDescription ? <div style={{ fontFamily: collegeDescStyle.fontFamily || 'inherit', fontSize: (collegeDescStyle.fontSize || 14) + 'px', lineHeight: collegeDescStyle.lineHeight || 1.3, marginTop: (collegeDescStyle.marginTop || 5) + 'px' }}>{item.collegeDescription}</div> : null}
-                </div>
-                <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  {l[1] ? <img src={l[1]} alt="logo-right" className="h-10 sm:h-12 lg:h-14 object-contain" /> : null}
-                </div>
-              </>
-            );
-          })()}
+    <div className="relative w-full max-w-[900px] mx-auto shadow-2xl overflow-hidden min-h-[400px] md:min-h-[600px]" style={{ backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="relative p-4 sm:p-6 lg:p-10 text-center">
+        {/* Header with logo and college name */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0" style={{ marginBottom: (collegeStyle.marginBottom || 15) + 'px' }}>
+          <div className="flex items-center gap-2 sm:gap-3">
+            {(item?.logos || []).filter(Boolean).slice(0,1).map((url,idx)=> (
+              <img key={idx} src={url} alt="logo-left" className="h-10 sm:h-12 lg:h-14 object-contain" />
+            ))}
+            <div className="text-left leading-tight" style={{ 
+              fontFamily: collegeStyle.fontFamily || 'inherit',
+              fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px',
+              lineHeight: collegeStyle.lineHeight || 1.3,
+              textAlign: collegeStyle.align || 'left',
+              marginTop: (collegeStyle.marginTop || 5) + 'px'
+            }}>
+              <div className="font-semibold">{item?.collegeName}</div>
+            </div>
+          </div>
+          {(item?.logos || []).filter(Boolean).slice(1,2).map((url,idx)=> (
+            <img key={idx} src={url} alt="logo-right" className="h-10 sm:h-12 lg:h-14 object-contain" />
+          ))}
         </div>
 
+        {/* College Description below college name */}
+        {item?.collegeDescription ? (
+          <div style={{ 
+            fontFamily: collegeDescStyle.fontFamily || 'inherit',
+            fontSize: (collegeDescStyle.fontSize || 14) + 'px',
+            lineHeight: collegeDescStyle.lineHeight || 1.3,
+            textAlign: collegeDescStyle.align || 'center',
+            width: (collegeDescStyle.width || 80) + '%',
+            margin: `${collegeDescStyle.marginTop || 5}px auto ${collegeDescStyle.marginBottom || 20}px auto`
+          }}>
+            {item.collegeDescription}
+          </div>
+        ) : null}
         
         {/* Title */}
         <h2 className="font-extrabold tracking-wide text-blue-900" style={{ 
@@ -82,10 +93,9 @@ function DirectTemplate({ item, start, end, onNameChange }) {
         {/* Student College */}
         {item?.studentCollege ? (
           <div className="mt-1" style={{ 
-            fontFamily: studentCollegeStyle.fontFamily || introStyle.fontFamily || 'inherit',
-            fontSize: (studentCollegeStyle.fontSize || introStyle.fontSize || 14) + 'px',
-            textAlign: studentCollegeStyle.align || introStyle.align || 'center',
-            marginTop: (studentCollegeStyle.marginTop || 4) + 'px'
+            fontFamily: introStyle.fontFamily || 'inherit',
+            fontSize: (introStyle.fontSize || 14) + 'px',
+            textAlign: introStyle.align || 'center'
           }}>
             {item.studentCollege}
           </div>
@@ -150,31 +160,10 @@ function DirectTemplate({ item, start, end, onNameChange }) {
 
 // Minimal variant with solid border
 function MinimalTemplate({ item, start, end, onNameChange }) {
-  const styles = item?.styles || {};
-  const collegeStyle = styles.collegeStyle || {};
-  const collegeDescStyle = styles.collegeDescStyle || {};
-  const studentCollegeStyle = styles.studentCollegeStyle || {};
-
   return (
-    <div className="border-4 border-gray-900 p-8 mx-auto bg-white text-center rounded" style={{ width: '794px', height: '1000px', backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box' }}>
-      <div className="flex items-center mb-6" style={{ justifyContent: (item?.logos || []).filter(Boolean).length === 1 ? 'flex-start' : 'space-between' }}>
-        {(() => {
-          const l = (item?.logos || []).filter(Boolean);
-          return (
-            <>
-              <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {l[0] ? <img src={l[0]} alt="logo-left" className="h-10 object-contain" /> : null}
-              </div>
-              <div className="header-center" style={{ flex: 1, textAlign: collegeStyle.align || 'center', marginLeft: 8, marginRight: 8 }}>
-                <div className="font-semibold" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: (collegeStyle.fontSize || 18) + 'px' }}>{item?.collegeName}</div>
-                {item?.collegeDescription ? <div style={{ fontFamily: collegeDescStyle.fontFamily || 'inherit', fontSize: (collegeDescStyle.fontSize || 14) + 'px' }}>{item.collegeDescription}</div> : null}
-              </div>
-              <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                {l[1] ? <img src={l[1]} alt="logo-right" className="h-10 object-contain" /> : null}
-              </div>
-            </>
-          );
-        })()}
+    <div className="border-4 border-gray-900 p-12 w-[900px] mx-auto bg-white text-center rounded" style={{ backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="flex justify-between mb-6">
+        {(item?.logos || []).slice(0,3).map((url,idx)=> (<img key={idx} src={url} alt="logo" className="h-10 object-contain" />))}
       </div>
       {item?.customTitleImageUrl ? (
         <img src={item.customTitleImageUrl} alt="title" className="h-12 mx-auto" />
@@ -183,9 +172,6 @@ function MinimalTemplate({ item, start, end, onNameChange }) {
       )}
       <p className="mt-4">{item?.bodyText || "This is to certify that"}</p>
       <input value={item?.studentName || ""} onChange={(e)=>onNameChange?.(e.target.value)} placeholder="Student Name" className="text-3xl font-extrabold mt-1 text-gray-900 text-center w-full bg-transparent outline-none" />
-      {item?.studentCollege ? (
-        <div style={{ fontFamily: studentCollegeStyle.fontFamily || 'inherit', fontSize: (studentCollegeStyle.fontSize || 16) + 'px', textAlign: studentCollegeStyle.align || 'center', marginTop: (studentCollegeStyle.marginTop || 8) + 'px' }}>{item.studentCollege}</div>
-      ) : null}
       {(item?.textBlocks || []).map((b, idx)=> {
         const style = {
           textAlign: b.align || 'left',
@@ -235,9 +221,10 @@ export default function CertificatePreview({ item, onChange }) {
   // Keep input binding for name editing via overlay, but render iframe with server-matched HTML
   const iframeRef = useRef(null);
   const html = useMemo(() => generateCertificateHTML(item || {}), [item]);
+  const [orientation, setOrientation] = useState('portrait');
 
-  // fixed portrait preview dims (landscape support removed)
-  const previewDims = { width: 794, height: 1000 };
+  // compute preview dims based on orientation
+  const previewDims = orientation === 'landscape' ? { width: 1123, height: 794 } : { width: 794, height: 1123 };
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -248,20 +235,98 @@ export default function CertificatePreview({ item, onChange }) {
     // Prepare HTML to write into iframe
     let htmlToWrite = html;
 
-    // Always center the certificate for preview (no landscape behavior)
-    const centerStyle = `\n<style> body{display:flex;align-items:center;justify-content:center;background:#ffffff;margin:0;padding:0;} .certificate{margin:0;} </style>\n`;
-    if (htmlToWrite.includes('</head>')) htmlToWrite = htmlToWrite.replace('</head>', `${centerStyle}</head>`);
-    else htmlToWrite = centerStyle + htmlToWrite;
+    if (orientation === 'landscape') {
+      // Inject the exact clone+crop+scale algorithm used by htmlToPdfBlob so preview == exported PDF
+      const injectScript = `
+<script>(function(){
+  function ready(){
+    try{
+      const cert = document.querySelector('.certificate');
+      if(!cert) return;
+      // wait for images to load then perform content-aware clone/scale
+      const imgs = Array.from(document.images || []);
+      Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(r=>{ img.onload = img.onerror = r; }))).then(()=>{
+        // small delay to ensure layout/fonts settle (matches exporter)
+        setTimeout(()=>{
+          try{
+            const elRect = cert.getBoundingClientRect();
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            const children = cert.querySelectorAll('*');
+            children.forEach((ch)=>{
+              const r = ch.getBoundingClientRect();
+              if (r.width > 2 && r.height > 2) {
+                minX = Math.min(minX, r.left);
+                minY = Math.min(minY, r.top);
+                maxX = Math.max(maxX, r.right);
+                maxY = Math.max(maxY, r.bottom);
+              }
+            });
+            if (!isFinite(minX)) { minX = elRect.left; minY = elRect.top; maxX = elRect.right; maxY = elRect.bottom; }
+            const contentW = maxX - minX;
+            const contentH = maxY - minY;
+            const margin = 24;
+            const previewW = ${previewDims.width};
+            const previewH = ${previewDims.height};
+            const scale = Math.min((previewW - margin*2) / contentW, (previewH - margin*2) / contentH) * 0.95;
+
+            // If computed scale is invalid or bounding box is too small, fallback to centered scaled certificate
+            if (!isFinite(scale) || contentW < 10 || contentH < 10) {
+              const originalWidth = 794;
+              const originalHeight = 1123;
+              const fallbackScale = Math.min(previewW / originalWidth, previewH / originalHeight) * 0.95;
+              cert.style.transform = 'scale(' + fallbackScale + ')';
+              cert.style.transformOrigin = 'center center';
+              document.body.style.display = 'flex';
+              document.body.style.alignItems = 'center';
+              document.body.style.justifyContent = 'center';
+              document.body.style.background = '#ffffff';
+            } else {
+              const wrapper = document.createElement('div');
+              wrapper.style.width = previewW + 'px';
+              wrapper.style.height = previewH + 'px';
+              wrapper.style.display = 'flex';
+              wrapper.style.justifyContent = 'center';
+              wrapper.style.alignItems = 'center';
+              wrapper.style.overflow = 'hidden';
+              wrapper.style.background = '#ffffff';
+
+              const clone = cert.cloneNode(true);
+              clone.style.margin = '-' + Math.round(minY - elRect.top) + 'px 0 0 -' + Math.round(minX - elRect.left) + 'px';
+              clone.style.transformOrigin = 'top left';
+              clone.style.transform = 'scale(' + scale + ')';
+              clone.style.display = 'block';
+
+              document.body.innerHTML = '';
+              wrapper.appendChild(clone);
+              document.body.appendChild(wrapper);
+            }
+          } catch(e) { console.error(e); }
+        }, 40);
+      });
+    } catch(e) { console.error(e); }
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') ready(); else document.addEventListener('DOMContentLoaded', ready);
+})();</script>
+`;
+      // Insert script right before </body> if present, otherwise append
+      if (htmlToWrite.includes('</body>')) htmlToWrite = htmlToWrite.replace('</body>', `${injectScript}</body>`);
+      else htmlToWrite = htmlToWrite + injectScript;
+    } else {
+      // Portrait: simple centering
+      const centerStyle = `\n<style> body{display:flex;align-items:center;justify-content:center;background:#ffffff;} </style>\n`;
+      if (htmlToWrite.includes('</head>')) htmlToWrite = htmlToWrite.replace('</head>', `${centerStyle}</head>`);
+      else htmlToWrite = centerStyle + htmlToWrite;
+    }
 
     doc.open();
     doc.write(htmlToWrite);
     doc.close();
-  }, [html]);
+  }, [html, orientation]);
 
   const downloadPdf = async () => {
     try {
-      const blob = await htmlToPdfBlob(html);
-      saveAs(blob, `certificate-${item?._id || 'preview'}-portrait.pdf`);
+      const blob = await htmlToPdfBlob(html, orientation);
+      saveAs(blob, `certificate-${item?._id || 'preview'}-${orientation}.pdf`);
     } catch (err) {
       console.error('PDF export failed', err);
       alert('Failed to generate PDF: ' + (err?.message || err));
@@ -269,27 +334,30 @@ export default function CertificatePreview({ item, onChange }) {
   };
 
   return (
-    <div className="relative w-full overflow-hidden">
-      <div className="relative mx-auto" style={{ width: previewDims.width }}>
+    <div className="relative w-full overflow-auto">
+      <div className="relative mx-auto" style={{ width: '100%', maxWidth: previewDims.width }}>
         <iframe
           ref={iframeRef}
           title="certificate-preview"
           style={{
-            width: previewDims.width + 'px',
-            height: previewDims.height + 'px',
+            width: '100%',
+            maxWidth: previewDims.width,
+            aspectRatio: `${previewDims.width}/${previewDims.height}`,
             border: 0,
-            background: 'transparent',
-            display: 'block'
+            background: 'transparent'
           }}
         />
       </div>
 
-      <div className="mt-4 flex justify-center">
-        <button type="button" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow" onClick={downloadPdf}>Download PDF</button>
-      </div>
-
-      <div className="mt-2 flex justify-center">
-        <input value={item?.studentName || ''} onChange={(e)=>onChange?.({ studentName: e.target.value })} placeholder="Edit Student Name" className="p-2 border rounded w-64" />
+      <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center">
+        <div className="flex items-center gap-2">
+          <label className="text-sm">Orientation:</label>
+          <select value={orientation} onChange={(e)=>setOrientation(e.target.value)} className="p-2 border rounded bg-white">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </div>
+        <button type="button" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow" onClick={downloadPdf}>Download as PDF</button>
       </div>
     </div>
   );
