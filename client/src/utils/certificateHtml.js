@@ -36,6 +36,17 @@ export function generateDirectHTML(doc) {
 
 	const textBlocks = Array.isArray(doc.textBlocks) ? doc.textBlocks : [];
 	const fontLinks = buildGoogleFontsLink(doc);
+	// adaptive header (0/1/2 logos) - centers name/logo automatically
+	const logosArr = (doc.logos || []).filter(Boolean).slice(0,2);
+	let headerHtml = '';
+	if (logosArr.length === 0) {
+		headerHtml = `<div class="header" style="justify-content:center;"><div class="college-name"><div>${doc.collegeName || ''}</div></div></div>`;
+	} else if (logosArr.length === 1) {
+		headerHtml = `<div class="header" style="flex-direction:column; gap:8px; justify-content:center; align-items:center;"><img src="${logosArr[0]}" class="logo" /><div class="college-name"><div>${doc.collegeName || ''}</div></div></div>`;
+	} else {
+		headerHtml = `<div class="header"><img src="${logosArr[0]}" class="logo" /><div class="college-name"><div>${doc.collegeName || ''}</div></div><img src="${logosArr[1]}" class="logo" /></div>`;
+	}
+
 	return `
 		<!DOCTYPE html>
 		<html>
@@ -44,7 +55,7 @@ export function generateDirectHTML(doc) {
 				${fontLinks}
 				<style>
 					@page { size: A4; margin: 0 }
-					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
+				html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; overflow: hidden; }
 					/* A4 portrait at ~96dpi: 794x1123px */
 					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
 					.content { position: relative; padding: 40px; text-align: center; }
@@ -70,15 +81,7 @@ export function generateDirectHTML(doc) {
 			<body>
 				<div class="certificate" style="background-image: ${doc.backgroundUrl ? `url(${doc.backgroundUrl})` : 'none'};">
 					<div class="content">
-						<div class="header">
-							<div style="display: flex; align-items: center; gap: 12px;">
-								${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-								<div class="college-name">
-									<div>${doc.collegeName || ''}</div>
-								</div>
-							</div>
-							${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
-						</div>
+${headerHtml}
 
 						${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 
@@ -144,6 +147,16 @@ export function generateMinimalHTML(doc) {
 
 	const textBlocks = Array.isArray(doc.textBlocks) ? doc.textBlocks : [];
 	const fontLinks = buildGoogleFontsLink(doc);
+	// adaptive header (0/1/2 logos)
+	const logosArr = (doc.logos || []).filter(Boolean).slice(0,2);
+	let headerHtml = '';
+	if (logosArr.length === 0) {
+		headerHtml = `<div class="header" style="justify-content:center;"><div class="college-name">${doc.collegeName || ''}</div></div>`;
+	} else if (logosArr.length === 1) {
+		headerHtml = `<div class="header" style="flex-direction:column; gap:8px; justify-content:center; align-items:center;"><img src="${logosArr[0]}" class="logo" /><div class="college-name">${doc.collegeName || ''}</div></div>`;
+	} else {
+		headerHtml = `<div class="header"><img src="${logosArr[0]}" class="logo" /><div class="college-name">${doc.collegeName || ''}</div><img src="${logosArr[1]}" class="logo" /></div>`;
+	}
 	return `
 		<!DOCTYPE html>
 		<html>
@@ -152,7 +165,7 @@ export function generateMinimalHTML(doc) {
 				${fontLinks}
 				<style>
 					@page { size: A4; margin: 0 }
-					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
+				html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; overflow: hidden; }
 					/* A4 portrait content area */
 					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background: white; padding: 40px; text-align: center; box-sizing: border-box; }
 					.header { margin-bottom: 30px; display:flex; justify-content: space-between; align-items:center; }
@@ -176,15 +189,11 @@ export function generateMinimalHTML(doc) {
 			</head>
 			<body>
 				<div class="certificate">
-					<div class="header">
-						${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-						<div class="college-name">${doc.collegeName || ''}</div>
-						${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
-					</div>
+					${headerHtml}
 
 					${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 
-					${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style=\"font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af;\">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
+					${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style="font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af;">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
 
 					<div style="width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 18}px; line-height: ${introStyle.lineHeight || 1.5}; color: #374151;">
 						<span>${doc.introLeft || "This is to certify that"} </span>

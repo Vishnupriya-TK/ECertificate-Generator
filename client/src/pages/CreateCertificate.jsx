@@ -10,7 +10,7 @@ export default function CreateCertificate() {
   // Removed start/end date per requirements
   // course removed per requirements
   const [mode, setMode] = useState("single");
-  const [students, setStudents] = useState([{ name: "", email: "" }]);
+  const [students, setStudents] = useState([{ name: "", email: "", college: "" }]);
   const [logos, setLogos] = useState([""]); // array of logo URLs or dataURLs; first logo is used
   const [backgroundUrl, setBackgroundUrl] = useState("");
   // typography selections for each field with spacing controls
@@ -35,7 +35,7 @@ export default function CreateCertificate() {
     setStudents(arr);
   };
 
-  const addStudent = () => setStudents([...students, { name: "", email: "" }]);
+  const addStudent = () => setStudents([...students, { name: "", email: "", college: "" }]);
   const addLogo = () => setLogos([...logos, ""]);
   const addSignatory = () => setSignatories([...signatories, { name: "", designation: "", signatureUrl: "", department: "" }]);
   
@@ -55,7 +55,7 @@ export default function CreateCertificate() {
       const rows = text.split("\n").filter(Boolean);
       const parsed = rows.slice(1).map(r => {
         const cols = r.split(",").map(c => c.trim());
-        return { name: cols[0] || "", email: cols[1] || "" };
+        return { name: cols[0] || "", email: cols[1] || "", college: cols[2] || "" };
       });
       setStudents(parsed);
     };
@@ -93,7 +93,7 @@ export default function CreateCertificate() {
 
   return (
     <div className="flex flex-col items-center justify-start min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 text-gray-900 font-poppins pt-6 overflow-x-hidden p-2 sm:p-4 lg:p-6">
-      <div className="w-full lg:w-1/2 bg-white p-3 sm:p-4 lg:p-6 rounded shadow space-y-3">
+      <div className="w-full bg-white p-3 sm:p-4 lg:p-6 rounded shadow space-y-3">
         <h2 className="text-xl font-bold">Create Certificate</h2>
 
         <input value={college} onChange={(e)=>setCollege(e.target.value)} placeholder="College name" className="w-full p-2 border rounded" style={{ fontFamily: collegeStyle.fontFamily || 'Arial, Helvetica, sans-serif' }} />
@@ -419,6 +419,7 @@ export default function CreateCertificate() {
               <div key={i} className="space-y-2 border p-2 rounded">
                 <input value={s.name} onChange={(e)=>handleStudentChange(i,"name",e.target.value)} placeholder="Student name" className="w-full p-2 border rounded" />
                 <input value={s.email} onChange={(e)=>handleStudentChange(i,"email",e.target.value)} placeholder="Student email (optional)" className="w-full p-2 border rounded" />
+                <input value={s.college || ''} onChange={(e)=>handleStudentChange(i,"college",e.target.value)} placeholder="Student college (optional)" className="w-full p-2 border rounded" />
               </div>
             ))}
             <button type="button" onClick={addStudent} className="px-3 py-1 bg-green-500 text-white rounded">Add Student</button>
@@ -433,7 +434,7 @@ export default function CreateCertificate() {
         <button onClick={submit} className="w-full bg-blue-600 text-white p-2 rounded">Generate</button>
       </div>
 
-      <div className="w-full lg:w-1/2 space-y-4">
+      <div className="w-full space-y-4">
         <h3 className="text-lg font-bold">Preview</h3>
         {students.map((s, i) => (
           <CertificatePreview key={i} item={{
@@ -451,7 +452,7 @@ export default function CreateCertificate() {
             introLeft,
             introRight,
             eventDescription,
-            studentCollege,
+            studentCollege: s.college || studentCollege,
             signatories,
             styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, signatoryStyle }
           }} onChange={(updated)=>{
