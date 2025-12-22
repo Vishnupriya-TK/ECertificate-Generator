@@ -23,6 +23,7 @@ export default function CreateCertificate() {
   const [eventDescStyle, setEventDescStyle] = useState({ fontFamily: "", fontSize: 16, lineHeight: 1.4, width: 80, align: "center", marginTop: 10, marginBottom: 10 });
   const [collegeStyle, setCollegeStyle] = useState({ fontFamily: "Arial, Helvetica, sans-serif", fontSize: 18, lineHeight: 1.3, width: 80, align: "center", marginTop: 5, marginBottom: 15 });
   const [collegeDescStyle, setCollegeDescStyle] = useState({ fontFamily: "Arial, Helvetica, sans-serif", fontSize: 14, lineHeight: 1.3, width: 80, align: "center", marginTop: 5, marginBottom: 20 });
+  const [studentCollegeStyle, setStudentCollegeStyle] = useState({ fontFamily: "", fontSize: 16, lineHeight: 1.2, width: 80, align: "center", marginTop: 8, marginBottom: 8 });
   const [signatoryStyle, setSignatoryStyle] = useState({ fontFamily: "", fontSize: 12, lineHeight: 1.2, width: 80, align: "center", marginTop: 40, marginBottom: 10 });
   const templateKey = "classic";
   const [titleOverride, setTitleOverride] = useState("");
@@ -86,7 +87,7 @@ export default function CreateCertificate() {
         studentCollege,
         collegeDescription,
         signatories: signatories.filter(s=>s.name && s.designation),
-        styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, signatoryStyle }
+        styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, studentCollegeStyle, signatoryStyle }
       });
       alert("Certificates created in DB!");
     } catch (err) {
@@ -191,7 +192,7 @@ export default function CreateCertificate() {
                     eventDescription,
                     studentCollege,
                     signatories,
-                    styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, signatoryStyle }
+                    styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, studentCollegeStyle, signatoryStyle }
                   };
                   try {
                     const html = generateCertificateHTML(item);
@@ -272,6 +273,40 @@ export default function CreateCertificate() {
               {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
             </select>
             <select value={collegeDescStyle.marginBottom} onChange={(e)=>setCollegeDescStyle({...collegeDescStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
+            </select>
+          </div>
+
+          <h4 className="font-semibold">Student College Style</h4>
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 sm:gap-2">
+            <select value={studentCollegeStyle.fontFamily} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, fontFamily: e.target.value})} className="p-2 border rounded">
+              <option value="">Font</option>
+              <option value="Poppins, sans-serif">Poppins</option>
+              <option value="Roboto, sans-serif">Roboto</option>
+              <option value="Merriweather, serif">Merriweather</option>
+              <option value="Montserrat, sans-serif">Montserrat</option>
+              <option value="Times New Roman, serif">Times</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Arial, Helvetica, sans-serif">Arial</option>
+            </select>
+            <select value={studentCollegeStyle.fontSize} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, fontSize: Number(e.target.value)})} className="p-2 border rounded">
+              {[10,12,14,16,18,20,22,24,26,28,30,32,36,40,44,48].map(n=> <option key={n} value={n}>{n}px</option>)}
+            </select>
+            <select value={studentCollegeStyle.lineHeight} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, lineHeight: Number(e.target.value)})} className="p-2 border rounded">
+              {[1,1.1,1.2,1.3,1.4,1.5].map(n=> <option key={n} value={n}>{n}</option>)}
+            </select>
+            <select value={studentCollegeStyle.width} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, width: Number(e.target.value)})} className="p-2 border rounded">
+              {[60,70,80,90,100].map(n=> <option key={n} value={n}>{n}%</option>)}
+            </select>
+            <select value={studentCollegeStyle.align} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, align: e.target.value})} className="p-2 border rounded">
+              <option value="left">Left</option>
+              <option value="center">Center</option>
+              <option value="right">Right</option>
+            </select>
+            <select value={studentCollegeStyle.marginTop} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, marginTop: Number(e.target.value)})} className="p-2 border rounded">
+              {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↑{n}px</option>)}
+            </select>
+            <select value={studentCollegeStyle.marginBottom} onChange={(e)=>setStudentCollegeStyle({...studentCollegeStyle, marginBottom: Number(e.target.value)})} className="p-2 border rounded">
               {[0,5,10,15,20,25,30].map(n=> <option key={n} value={n}>↓{n}px</option>)}
             </select>
           </div>
@@ -452,31 +487,79 @@ export default function CreateCertificate() {
 
       <div className="w-full lg:w-1/2 space-y-4">
         <h3 className="text-lg font-bold">Preview</h3>
-        {students.map((s, i) => (
-          <CertificatePreview key={i} item={{
-            studentName: s.name || "Student Name",
-            // course removed
-            // event removed
-            // eventType removed
-            // dates removed
-            collegeName: college,
-            collegeDescription,
-            logos,
-            templateKey,
-            backgroundUrl,
-            titleOverride,
-            introLeft,
-            introRight,
-            eventDescription,
-            studentCollege,
-            signatories,
-            styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, signatoryStyle }
-          }} onChange={(updated)=>{
-            const arr = [...students];
-            arr[i].name = updated.studentName;
-            setStudents(arr);
-          }} />
-        ))}
+        {mode === 'multiple' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[75vh] overflow-auto">
+            {students.map((s,i)=> (
+              <div key={i} className="border rounded p-2 bg-white">
+                <div className="text-sm font-medium mb-2">{s.name || `Student ${i+1}`}</div>
+                <CertificatePreview item={{
+                  studentName: s.name || "Student Name",
+                  collegeName: college,
+                  collegeDescription,
+                  logos,
+                  templateKey,
+                  backgroundUrl,
+                  titleOverride,
+                  introLeft,
+                  introRight,
+                  eventDescription,
+                  studentCollege,
+                  signatories,
+                  styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, studentCollegeStyle, signatoryStyle }
+                }} onChange={(updated)=>{ const arr=[...students]; arr[i].name=updated.studentName; setStudents(arr); }} />
+
+                <div className="mt-2 flex gap-2 justify-center">
+                  <button type="button" className="px-3 py-1 bg-indigo-600 text-white rounded" onClick={async ()=>{
+                    try {
+                      const item = {
+                        studentName: s.name || `student-${i+1}`,
+                        collegeName: college,
+                        collegeDescription,
+                        logos,
+                        templateKey,
+                        backgroundUrl,
+                        titleOverride,
+                        introLeft,
+                        introRight,
+                        eventDescription,
+                        studentCollege,
+                        signatories,
+                        styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, studentCollegeStyle, signatoryStyle }
+                      };
+                      const html = generateCertificateHTML(item);
+                      const blob = await htmlToPdfBlob(html);
+                      saveAs(blob, `certificate-${(s.name || `student-${i+1}`).replace(/\s+/g,'_')}.pdf`);
+                    } catch (e) { console.error('failed', e); alert('Failed to download PDF for ' + (s.name || `student-${i+1}`)); }
+                  }}>Download</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div>
+            {students.map((s, i) => (
+              <CertificatePreview key={i} item={{
+                studentName: s.name || "Student Name",
+                collegeName: college,
+                collegeDescription,
+                logos,
+                templateKey,
+                backgroundUrl,
+                titleOverride,
+                introLeft,
+                introRight,
+                eventDescription,
+                studentCollege,
+                signatories,
+                styles: { titleStyle, nameStyle, introStyle, eventDescStyle, collegeStyle, collegeDescStyle, studentCollegeStyle, signatoryStyle }
+              }} onChange={(updated)=>{
+                const arr = [...students];
+                arr[i].name = updated.studentName;
+                setStudents(arr);
+              }} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

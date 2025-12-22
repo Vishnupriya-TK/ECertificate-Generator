@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { generateCertificateHTML } from "../utils/certificateHtml";
 import { htmlToPdfBlob } from "../utils/pdf";
 import { saveAs } from 'file-saver';
@@ -12,34 +12,26 @@ function DirectTemplate({ item, start, end, onNameChange }) {
   const introStyle = styles.introStyle || {};
   const eventDescStyle = styles.eventDescStyle || {};
   const signatoryStyle = styles.signatoryStyle || {};
+  const studentCollegeStyle = styles.studentCollegeStyle || {};
+  const logos = (item?.logos || []).filter(Boolean);
 
   return (
     <div className="relative mx-auto shadow-2xl overflow-hidden" style={{ width: '794px', height: '1000px', backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box' }}>
       <div className="relative p-4 sm:p-6 lg:p-10 text-center" style={{ width: '100%', height: '100%' }}>
-        {/* Header with logo and college name */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-0" style={{ marginBottom: (collegeStyle.marginBottom || 15) + 'px' }}>
+        {/* Header with logo and college name (3-column) */}
+        <div className="flex items-center" style={{ marginBottom: (collegeStyle.marginBottom || 15) + 'px', justifyContent: logos.length === 1 ? 'flex-start' : 'space-between' }}>
           {(() => {
             const l = (item?.logos || []).filter(Boolean);
-            if (l.length === 0) return (
-              <div className="w-full text-center" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>
-                <div className="font-semibold">{item?.collegeName}</div>
-              </div>
-            );
-            if (l.length === 1) return (
-              <div className="w-full flex items-center justify-start gap-3" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>
-                <img src={l[0]} alt="logo" className="h-10 sm:h-12 lg:h-14 object-contain" />
-                <div className="font-semibold text-left">{item?.collegeName}</div>
-              </div>
-            );
             return (
               <>
-                <div className="flex items-center gap-3">
+                <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   {l[0] ? <img src={l[0]} alt="logo-left" className="h-10 sm:h-12 lg:h-14 object-contain" /> : null}
                 </div>
-                <div className="text-center flex-1" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>
-                  <div className="font-semibold">{item?.collegeName}</div>
+                <div className="header-center" style={{ flex: 1, textAlign: logos.length === 1 ? 'left' : (collegeStyle.align || 'center'), marginLeft: 8, marginRight: 8 }}>
+                  <div className="font-semibold" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>{item?.collegeName}</div>
+                  {item?.collegeDescription ? <div style={{ fontFamily: collegeDescStyle.fontFamily || 'inherit', fontSize: (collegeDescStyle.fontSize || 14) + 'px', lineHeight: collegeDescStyle.lineHeight || 1.3, marginTop: (collegeDescStyle.marginTop || 5) + 'px' }}>{item.collegeDescription}</div> : null}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   {l[1] ? <img src={l[1]} alt="logo-right" className="h-10 sm:h-12 lg:h-14 object-contain" /> : null}
                 </div>
               </>
@@ -47,19 +39,6 @@ function DirectTemplate({ item, start, end, onNameChange }) {
           })()}
         </div>
 
-        {/* College Description below college name */}
-        {item?.collegeDescription ? (
-          <div style={{ 
-            fontFamily: collegeDescStyle.fontFamily || 'inherit',
-            fontSize: (collegeDescStyle.fontSize || 14) + 'px',
-            lineHeight: collegeDescStyle.lineHeight || 1.3,
-            textAlign: collegeDescStyle.align || 'center',
-            width: (collegeDescStyle.width || 80) + '%',
-            margin: `${collegeDescStyle.marginTop || 5}px auto ${collegeDescStyle.marginBottom || 20}px auto`
-          }}>
-            {item.collegeDescription}
-          </div>
-        ) : null}
         
         {/* Title */}
         <h2 className="font-extrabold tracking-wide text-blue-900" style={{ 
@@ -103,9 +82,10 @@ function DirectTemplate({ item, start, end, onNameChange }) {
         {/* Student College */}
         {item?.studentCollege ? (
           <div className="mt-1" style={{ 
-            fontFamily: introStyle.fontFamily || 'inherit',
-            fontSize: (introStyle.fontSize || 14) + 'px',
-            textAlign: introStyle.align || 'center'
+            fontFamily: studentCollegeStyle.fontFamily || introStyle.fontFamily || 'inherit',
+            fontSize: (studentCollegeStyle.fontSize || introStyle.fontSize || 14) + 'px',
+            textAlign: studentCollegeStyle.align || introStyle.align || 'center',
+            marginTop: (studentCollegeStyle.marginTop || 4) + 'px'
           }}>
             {item.studentCollege}
           </div>
@@ -170,19 +150,30 @@ function DirectTemplate({ item, start, end, onNameChange }) {
 
 // Minimal variant with solid border
 function MinimalTemplate({ item, start, end, onNameChange }) {
+  const styles = item?.styles || {};
+  const collegeStyle = styles.collegeStyle || {};
+  const collegeDescStyle = styles.collegeDescStyle || {};
+  const studentCollegeStyle = styles.studentCollegeStyle || {};
+
   return (
     <div className="border-4 border-gray-900 p-8 mx-auto bg-white text-center rounded" style={{ width: '794px', height: '1000px', backgroundImage: item?.backgroundUrl ? `url(${item.backgroundUrl})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', boxSizing: 'border-box' }}>
       <div className="flex items-center mb-6" style={{ justifyContent: (item?.logos || []).filter(Boolean).length === 1 ? 'flex-start' : 'space-between' }}>
         {(() => {
           const l = (item?.logos || []).filter(Boolean);
-          if (l.length === 0) return <div className="flex-1 text-center font-semibold">{item?.collegeName}</div>;
-          if (l.length === 1) return (
-            <div className="w-full flex items-center gap-3">
-              <img src={l[0]} alt="logo" className="h-10 object-contain" />
-              <div className="font-semibold text-left">{item?.collegeName}</div>
-            </div>
+          return (
+            <>
+              <div className="header-left" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {l[0] ? <img src={l[0]} alt="logo-left" className="h-10 object-contain" /> : null}
+              </div>
+              <div className="header-center" style={{ flex: 1, textAlign: collegeStyle.align || 'center', marginLeft: 8, marginRight: 8 }}>
+                <div className="font-semibold" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: (collegeStyle.fontSize || 18) + 'px' }}>{item?.collegeName}</div>
+                {item?.collegeDescription ? <div style={{ fontFamily: collegeDescStyle.fontFamily || 'inherit', fontSize: (collegeDescStyle.fontSize || 14) + 'px' }}>{item.collegeDescription}</div> : null}
+              </div>
+              <div className="header-right" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                {l[1] ? <img src={l[1]} alt="logo-right" className="h-10 object-contain" /> : null}
+              </div>
+            </>
           );
-          return l.slice(0,3).map((url,idx)=> (<img key={idx} src={url} alt="logo" className="h-10 object-contain" />));
         })()}
       </div>
       {item?.customTitleImageUrl ? (
@@ -192,6 +183,9 @@ function MinimalTemplate({ item, start, end, onNameChange }) {
       )}
       <p className="mt-4">{item?.bodyText || "This is to certify that"}</p>
       <input value={item?.studentName || ""} onChange={(e)=>onNameChange?.(e.target.value)} placeholder="Student Name" className="text-3xl font-extrabold mt-1 text-gray-900 text-center w-full bg-transparent outline-none" />
+      {item?.studentCollege ? (
+        <div style={{ fontFamily: studentCollegeStyle.fontFamily || 'inherit', fontSize: (studentCollegeStyle.fontSize || 16) + 'px', textAlign: studentCollegeStyle.align || 'center', marginTop: (studentCollegeStyle.marginTop || 8) + 'px' }}>{item.studentCollege}</div>
+      ) : null}
       {(item?.textBlocks || []).map((b, idx)=> {
         const style = {
           textAlign: b.align || 'left',
@@ -292,6 +286,10 @@ export default function CertificatePreview({ item, onChange }) {
 
       <div className="mt-4 flex justify-center">
         <button type="button" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md shadow" onClick={downloadPdf}>Download PDF</button>
+      </div>
+
+      <div className="mt-2 flex justify-center">
+        <input value={item?.studentName || ''} onChange={(e)=>onChange?.({ studentName: e.target.value })} placeholder="Edit Student Name" className="p-2 border rounded w-64" />
       </div>
     </div>
   );

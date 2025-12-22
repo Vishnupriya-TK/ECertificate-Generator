@@ -243,19 +243,14 @@ function generateDirectHTML(doc) {
       <body>
         <div class="certificate" style="background-image: ${doc.backgroundUrl ? `url(${doc.backgroundUrl})` : 'none'};">
           <div class="content">
-            <!-- Header with logo and college name -->
+            <!-- Header with logo and college name (3-column, single-logo left-aligned) -->
             <div class="header">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                ${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-                <div class="college-name">
-                  <div>${doc.collegeName}</div>
-                </div>
-              </div>
-              ${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
+              ${(() => {
+                const l = (doc.logos || []).filter(Boolean);
+                if (l.length === 1) return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center" style="text-align:left"><div class="college-name" style="text-align:left">${doc.collegeName}</div>${doc.collegeDescription ? `<div class="college-desc" style="text-align:left">${doc.collegeDescription}</div>` : ''}</div><div class="header-right"></div>`;
+                return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center"><div class="college-name">${doc.collegeName}</div>${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}</div><div class="header-right">${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}</div>`;
+              })()}
             </div>
-
-            <!-- College Description -->
-            ${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 
             <!-- Title -->
             ${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style="font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 48}px; line-height: ${titleStyle.lineHeight || 1.3}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 800; color: #1e40af; letter-spacing: 0.025em;">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
@@ -360,13 +355,12 @@ function generateMinimalHTML(doc) {
       <body>
         <div class="certificate">
           <div class="header">
-            ${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-            <div class="college-name">${doc.collegeName}</div>
-            ${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
+            ${(() => {
+              const l = (doc.logos || []).filter(Boolean);
+              if (l.length === 1) return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center" style="text-align:left"><div class="college-name" style="text-align:left">${doc.collegeName}</div>${doc.collegeDescription ? `<div class="college-desc" style="text-align:left">${doc.collegeDescription}</div>` : ''}</div><div class="header-right"></div>`;
+              return `<div class="header-left">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="header-center"><div class="college-name">${doc.collegeName}</div>${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}</div><div class="header-right">${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}</div>`;
+            })()}
           </div>
-
-          <!-- College Description -->
-          ${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 
             <!-- Title -->
             ${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style="font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af;">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
