@@ -74,7 +74,7 @@ export function generateDirectHTML(doc) {
 				${(() => {
 					const l = (doc.logos || []).filter(Boolean);
 					if (l.length === 0) return `<div class="college-name">${doc.collegeName || ''}</div>`;
-					if (l.length === 1) return `<div style="display:flex;align-items:center;gap:12px;"><img src="${l[0]}" alt="logo" class="logo" /><div class="college-name">${doc.collegeName || ''}</div></div>`;
+					if (l.length === 1) return `<div style="display:flex;align-items:center;gap:12px;justify-content:flex-start;width:100%;"><img src="${l[0]}" alt="logo" class="logo" /><div class="college-name" style="text-align:left;">${doc.collegeName || ''}</div></div>`;
 					return `<div style="display:flex;align-items:center;gap:12px;">${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}</div><div class="college-name">${doc.collegeName || ''}</div><div style="display:flex;align-items:center;gap:12px;">${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}</div>`;
 				})()}
 
@@ -178,14 +178,10 @@ export function generateMinimalHTML(doc) {
 				${(() => {
 					const l = (doc.logos || []).filter(Boolean);
 					if (l.length === 0) return `<div class="college-name">${doc.collegeName || ''}</div>`;
-					if (l.length === 1) return `<div style="display:flex;align-items:center;gap:12px;"><img src="${l[0]}" alt="logo" class="logo" /><div class="college-name">${doc.collegeName || ''}</div></div>`;
-					return `${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}<div class="college-name">${doc.collegeName || ''}</div>${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}`;
-				})()}
-
-					${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
-
-					${doc.customTitleImageUrl ? `<img src="${doc.customTitleImageUrl}" alt="title" class="title-image" />` : `<h2 style=\"font-family: ${titleStyle.fontFamily || 'inherit'}; font-size: ${titleStyle.fontSize || 36}px; line-height: ${titleStyle.lineHeight || 1.2}; width: ${titleStyle.width || 80}%; margin: ${titleStyle.marginTop || 20}px auto ${titleStyle.marginBottom || 20}px auto; text-align: ${titleStyle.align || 'center'}; font-weight: 700; color: #1e40af;\">${doc.titleOverride || (doc.eventType === 'custom' && doc.customTitleText ? `CERTIFICATE OF ${doc.customTitleText}` : 'CERTIFICATE')}</h2>`}
-
+				if (l.length === 1) return `<div style="display:flex;align-items:center;gap:12px;justify-content:flex-start;width:100%;"><img src="${l[0]}" alt="logo" class="logo" /><div class="college-name" style="text-align:left;">${doc.collegeName || ''}</div></div>`;
+				return `${l[0] ? `<img src="${l[0]}" alt="logo-left" class="logo" />` : ''}<div class="college-name">${doc.collegeName || ''}</div>${l[1] ? `<img src="${l[1]}" alt="logo-right" class="logo" />` : ''}`;
+			})()}
+			${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 					<div style="width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 18}px; line-height: ${introStyle.lineHeight || 1.5}; color: #374151;">
 						<span>${doc.introLeft || "This is to certify that"} </span>
 						<div style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${nameStyle.fontSize || 32}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 800;">${doc.studentName || ''}</div>

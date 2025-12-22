@@ -23,22 +23,51 @@ export async function htmlToPdfBlob(html, orientation = 'portrait') {
 
   // Ensure content is centered/fitted in portrait fallback if required
   try {
-    const imgs = Array.from(container.querySelectorAll('img'));
+    // Parse the HTML to avoid nested <html>/<body> interfering with layout and prefer the .certificate element
+    const parser = new DOMParser();
+    const docFrag = parser.parseFromString(html, 'text/html');
+    const certEl = docFrag.querySelector('.certificate');
+
+    // Wait for image assets referenced by the certificate to load
+    const imgs = [];
+    if (certEl) {
+      Array.from(certEl.querySelectorAll('img')).forEach((imgNode) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.src = imgNode.src;
+        imgs.push(img);
+      });
+    } else {
+      Array.from(container.querySelectorAll('img')).forEach((i) => imgs.push(i));
+    }
     await Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(r => { img.onload = img.onerror = r; })));
     await new Promise((r) => setTimeout(r, 30));
-    const cert = container.querySelector('.certificate');
-    if (cert) {
-      const originalWidth = 794;
-      const originalHeight = 1000;
-      const scale = Math.min(dims.width / originalWidth, dims.height / originalHeight) * 0.95;
-      cert.style.transform = `scale(${scale})`;
-      cert.style.transformOrigin = 'center center';
-      cert.style.margin = '0';
-      container.style.display = 'flex';
-      container.style.justifyContent = 'center';
-      container.style.alignItems = 'center';
-      container.style.overflow = 'hidden';
+
+    // If we parsed a certificate element, replace the container content with it so it occupies the container exactly
+    if (certEl) {
+      container.innerHTML = '';
+      const cloned = certEl.cloneNode(true);
+      cloned.style.width = '100%';
+      cloned.style.height = '100%';
+      cloned.style.margin = '0';
+      cloned.style.transform = 'none';
+      cloned.style.boxSizing = 'border-box';
+      container.appendChild(cloned);
+    } else {
+      const cert = container.querySelector('.certificate');
+      if (cert) {
+        cert.style.width = '100%';
+        cert.style.height = '100%';
+        cert.style.margin = '0';
+        cert.style.transform = 'none';
+        cert.style.boxSizing = 'border-box';
+      }
     }
+
+    container.style.display = 'flex';
+    container.style.justifyContent = 'center';
+    container.style.alignItems = 'center';
+    container.style.overflow = 'hidden';
   } catch (e) {
     // ignore and fallback to default rendering
   }

@@ -26,9 +26,9 @@ function DirectTemplate({ item, start, end, onNameChange }) {
               </div>
             );
             if (l.length === 1) return (
-              <div className="w-full flex items-center justify-center gap-3" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>
+              <div className="w-full flex items-center justify-start gap-3" style={{ fontFamily: collegeStyle.fontFamily || 'inherit', fontSize: Math.max(12, (collegeStyle.fontSize || 18) * 0.8) + 'px', lineHeight: collegeStyle.lineHeight || 1.3, marginTop: (collegeStyle.marginTop || 5) + 'px' }}>
                 <img src={l[0]} alt="logo" className="h-10 sm:h-12 lg:h-14 object-contain" />
-                <div className="font-semibold">{item?.collegeName}</div>
+                <div className="font-semibold text-left">{item?.collegeName}</div>
               </div>
             );
             return (
