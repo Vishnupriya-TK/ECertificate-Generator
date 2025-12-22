@@ -312,62 +312,10 @@ export default function CertificatePreview({ item, onChange }) {
       if (htmlToWrite.includes('</body>')) htmlToWrite = htmlToWrite.replace('</body>', `${injectScript}</body>`);
       else htmlToWrite = htmlToWrite + injectScript;
     } else {
-      // Portrait: content-aware scale & center to minimize excess whitespace
-      const injectScriptPortrait = `
-<script>(function(){
-  function ready(){
-    try{
-      const cert = document.querySelector('.certificate');
-      if(!cert) return;
-      const imgs = Array.from(document.images || []);
-      Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(r=>{ img.onload = img.onerror = r; }))).then(()=>{
-        setTimeout(()=>{
-          try{
-            const elRect = cert.getBoundingClientRect();
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            const children = cert.querySelectorAll('*');
-            children.forEach((ch)=>{
-              const r = ch.getBoundingClientRect();
-              if (r.width > 2 && r.height > 2) {
-                minX = Math.min(minX, r.left);
-                minY = Math.min(minY, r.top);
-                maxX = Math.max(maxX, r.right);
-                maxY = Math.max(maxY, r.bottom);
-              }
-            });
-            if (!isFinite(minX)) { minX = elRect.left; minY = elRect.top; maxX = elRect.right; maxY = elRect.bottom; }
-            const contentW = maxX - minX;
-            const contentH = maxY - minY;
-            const previewW = ${previewDims.width};
-            const previewH = ${previewDims.height};
-            const margin = 24;
-            const scale = Math.min((previewW - margin*2) / contentW, (previewH - margin*2) / contentH) * 0.95;
-            if (!isFinite(scale) || contentW < 10 || contentH < 10) {
-              const fallbackScale = Math.min(previewW / elRect.width, previewH / elRect.height) * 0.95;
-              cert.style.transform = 'scale(' + fallbackScale + ')';
-              cert.style.transformOrigin = 'center center';
-              document.body.style.display = 'flex';
-              document.body.style.alignItems = 'center';
-              document.body.style.justifyContent = 'center';
-              document.body.style.background = '#ffffff';
-            } else {
-              cert.style.transformOrigin = 'top left';
-              cert.style.transform = 'scale(' + scale + ')';
-              document.body.style.display = 'flex';
-              document.body.style.alignItems = 'center';
-              document.body.style.justifyContent = 'center';
-              document.body.style.background = '#ffffff';
-            }
-          } catch(e) {}
-        },40);
-      });
-    } catch(e) {}
-  }
-  if (document.readyState === 'complete' || document.readyState === 'interactive') ready(); else document.addEventListener('DOMContentLoaded', ready);
-})();</script>
-`;
-      if (htmlToWrite.includes('</body>')) htmlToWrite = htmlToWrite.replace('</body>', `${injectScriptPortrait}</body>`);
-      else htmlToWrite = htmlToWrite + injectScriptPortrait;
+      // Portrait: simple centering
+      const centerStyle = `\n<style> body{display:flex;align-items:center;justify-content:center;background:#ffffff;} </style>\n`;
+      if (htmlToWrite.includes('</head>')) htmlToWrite = htmlToWrite.replace('</head>', `${centerStyle}</head>`);
+      else htmlToWrite = centerStyle + htmlToWrite;
     }
 
     doc.open();
@@ -386,26 +334,19 @@ export default function CertificatePreview({ item, onChange }) {
   };
 
   return (
-    <div className="relative w-full overflow-hidden">
+    <div className="relative w-full overflow-auto">
       <div className="relative mx-auto" style={{ width: '100%', maxWidth: previewDims.width }}>
-        {/* Maintain aspect ratio and prevent scrollbars */}
-        <div style={{ position: 'relative', width: '100%', maxWidth: previewDims.width, paddingTop: `${(previewDims.height / previewDims.width) * 100}%`, overflow: 'hidden' }}>
-          <iframe
-            ref={iframeRef}
-            title="certificate-preview"
-            scrolling="no"
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              border: 0,
-              background: 'transparent',
-              overflow: 'hidden'
-            }}
-          />
-        </div>
+        <iframe
+          ref={iframeRef}
+          title="certificate-preview"
+          style={{
+            width: '100%',
+            maxWidth: previewDims.width,
+            aspectRatio: `${previewDims.width}/${previewDims.height}`,
+            border: 0,
+            background: 'transparent'
+          }}
+        />
       </div>
 
       <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center items-center">
