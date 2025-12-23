@@ -46,7 +46,7 @@ export function generateDirectHTML(doc) {
 					@page { size: A4; margin: 0 }
 					html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
 					/* A4 portrait at ~96dpi: 794x1123px */
-					.certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
+					.certificate { position: relative; width: 794px; height: 1040px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
 					.content { position: relative; padding: 40px; text-align: center; }
 					.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: ${collegeStyle.marginBottom || 15}px; }
 					.logo { height: 56px; object-fit: contain; }
