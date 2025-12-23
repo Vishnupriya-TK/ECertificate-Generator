@@ -164,7 +164,6 @@ export default function ManageCertificates() {
                 <td className="p-2 border align-middle">
                   <div className="flex flex-wrap gap-2 justify-center items-center">
                     <button onClick={()=>handleDownload(item._id, 'portrait')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl shadow min-w-[110px] w-full sm:w-auto text-sm font-medium">Download (P)</button>
-                    <button onClick={()=>handleDownload(item._id, 'landscape')} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-xl shadow min-w-[110px] w-full sm:w-auto text-sm font-medium">Download (L)</button>
 
                     {editingId === item._id ? (
                       <>
