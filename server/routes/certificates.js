@@ -247,9 +247,6 @@ function generateDirectHTML(doc) {
             <div class="header">
               <div style="display: flex; align-items: center; gap: 12px;">
                 ${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-                <div class="college-name">
-                  <div>${doc.collegeName}</div>
-                </div>
               </div>
               ${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
             </div>
@@ -269,6 +266,8 @@ function generateDirectHTML(doc) {
 
             <!-- Student College -->
             ${doc.studentCollege ? `<div class="student-college">${doc.studentCollege}</div>` : ''}
+
+            ${doc.collegeName ? `<div class="college-name" style="font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${Math.max(12, (collegeStyle.fontSize || 18) * 0.8)}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; margin-top: ${collegeStyle.marginTop || 8}px; font-weight: bold;">${doc.collegeName}</div>` : ''}
 
             <!-- Optional text blocks -->
             ${textBlocks.map((b) => {
@@ -361,7 +360,6 @@ function generateMinimalHTML(doc) {
         <div class="certificate">
           <div class="header">
             ${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-            <div class="college-name">${doc.collegeName}</div>
             ${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
           </div>
 
@@ -380,6 +378,8 @@ function generateMinimalHTML(doc) {
 
           <!-- Student College -->
           ${doc.studentCollege ? `<div class="student-college">${doc.studentCollege}</div>` : ''}
+
+          ${doc.collegeName ? `<div class="college-name" style="font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize || 16}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; margin-top: ${collegeStyle.marginTop || 8}px; font-weight: bold;">${doc.collegeName}</div>` : ''}
 
           <!-- Optional text blocks -->
           ${textBlocks.map((b) => {
@@ -442,10 +442,8 @@ router.get("/:id/download", protect, async (req, res) => {
     }
 
     await page.setContent(html, { waitUntil: 'load' });
-    const landscape = String(req.query.orientation || '').toLowerCase() === 'landscape';
     const pdfBuffer = await page.pdf({
       format: 'A4',
-      landscape,
       printBackground: true,
       margin: { top: 0, right: 0, bottom: 0, left: 0 },
       preferCSSPageSize: true
