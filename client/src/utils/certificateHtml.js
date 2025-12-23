@@ -73,7 +73,12 @@ export function generateDirectHTML(doc) {
 						<div class="header">
 							<div style="display: flex; align-items: center; gap: 12px;">
 								${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-
+								<div class="college-name">
+									<div>${doc.collegeName || ''}</div>
+								</div>
+							</div>
+							${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
+						</div>
 
 						${doc.collegeDescription ? `<div class="college-desc">${doc.collegeDescription}</div>` : ''}
 
@@ -173,7 +178,7 @@ export function generateMinimalHTML(doc) {
 				<div class="certificate">
 					<div class="header">
 						${(doc.logos || []).filter(Boolean).slice(0,1).map(url => `<img src="${url}" alt="logo-left" class="logo" />`).join('')}
-
+						<div class="college-name">${doc.collegeName || ''}</div>
 						${(doc.logos || []).filter(Boolean).slice(1,2).map(url => `<img src="${url}" alt="logo-right" class="logo" />`).join('')}
 					</div>
 
@@ -188,10 +193,6 @@ export function generateMinimalHTML(doc) {
 					</div>
 
 					${doc.studentCollege ? `<div class="student-college">${doc.studentCollege}</div>` : ''}
-
-					${doc.collegeName ? `<div class="college-name" style="font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize || 16}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; margin-top: ${collegeStyle.marginTop || 8}px; font-weight: bold;">${doc.collegeName}</div>` : ''}
-
-					${doc.collegeName ? `<div class="college-name" style="font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${Math.max(12, (collegeStyle.fontSize || 18) * 0.8)}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; margin-top: ${collegeStyle.marginTop || 8}px; font-weight: bold;">${doc.collegeName}</div>` : ''}
 
 					${textBlocks.map((b) => {
 						const align = b.align || 'left';
