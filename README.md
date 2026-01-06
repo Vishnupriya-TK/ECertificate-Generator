@@ -15,7 +15,7 @@ It supports **individual and bulk certificate generation**, **PDF download**, an
 
 ### 🖥️ Frontend
 
-* **Framework:** React 19 + Vite
+* **Framework:** React + Vite
 * **Styling:** Tailwind CSS + Framer Motion
 * **Routing:** React Router DOM
 * **HTTP Client:** Axios
