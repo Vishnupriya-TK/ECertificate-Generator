@@ -267,9 +267,6 @@ function generateDirectHTML(doc) {
               <span> ${doc.introRight || "has participated in the event"}</span>
             </div>
 
-            <!-- Student College -->
-            ${doc.studentCollege ? `<div class="student-college">${doc.studentCollege}</div>` : ''}
-
             <!-- Optional text blocks -->
             ${textBlocks.map((b) => {
               const align = b.align || 'left';
@@ -377,9 +374,6 @@ function generateMinimalHTML(doc) {
             <div style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${nameStyle.fontSize || 32}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 800;">${doc.studentName}</div>
             <span> ${doc.introRight || "has successfully completed the program"}</span>
           </div>
-
-          <!-- Student College -->
-          ${doc.studentCollege ? `<div class="student-college">${doc.studentCollege}</div>` : ''}
 
           <!-- Optional text blocks -->
           ${textBlocks.map((b) => {

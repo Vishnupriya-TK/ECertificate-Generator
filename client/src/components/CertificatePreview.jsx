@@ -90,17 +90,6 @@ function DirectTemplate({ item, start, end, onNameChange }) {
           <span> {item?.introRight || "has participated in the event"}</span>
         </div>
         
-        {/* Student College */}
-        {item?.studentCollege ? (
-          <div className="mt-1" style={{ 
-            fontFamily: introStyle.fontFamily || 'inherit',
-            fontSize: (introStyle.fontSize || 14) + 'px',
-            textAlign: introStyle.align || 'center'
-          }}>
-            {item.studentCollege}
-          </div>
-        ) : null}
-        
         {/* Event Description */}
         {item?.eventDescription ? (
           <div style={{ 
