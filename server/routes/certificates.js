@@ -218,8 +218,8 @@ function generateDirectHTML(doc) {
         <style>
           @page { size: A4; margin: 0 }
           html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
-          /* A4 portrait at ~96dpi: 794x1123px */
-          .certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
+          /* Certificate at ~96dpi: 794x900px */
+          .certificate { position: relative; width: 794px; height: 900px; margin: 0 auto; background-size: cover; background-position: center; background-repeat: no-repeat; box-sizing: border-box; }
           .content { position: relative; padding: 40px; text-align: center; }
           .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: ${collegeStyle.marginBottom || 15}px; }
           .logo { height: 56px; object-fit: contain; }
@@ -333,8 +333,8 @@ function generateMinimalHTML(doc) {
         <style>
           @page { size: A4; margin: 0 }
           html, body { margin: 0; padding: 0; font-family: Arial, sans-serif; background: #ffffff; }
-          /* A4 portrait content area */
-          .certificate { position: relative; width: 794px; height: 1123px; margin: 0 auto; background: white; padding: 40px; text-align: center; box-sizing: border-box; }
+          /* Certificate content area */
+          .certificate { position: relative; width: 794px; height: 900px; margin: 0 auto; background: white; padding: 40px; text-align: center; box-sizing: border-box; }
           .header { margin-bottom: 30px; display:flex; justify-content: space-between; align-items:center; }
           .logo { height: 60px; object-fit: contain; margin-bottom: 0; }
           .college-name { font-family: ${collegeStyle.fontFamily || 'inherit'}; font-size: ${collegeStyle.fontSize || 18}px; line-height: ${collegeStyle.lineHeight || 1.3}; text-align: ${collegeStyle.align || 'center'}; font-weight: bold; color: #1f2937; }
@@ -425,7 +425,7 @@ router.get("/:id/download", protect, async (req, res) => {
     const launchOptions = getPuppeteerLaunchOptions();
     const browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
-    await page.setViewport({ width: 794, height: 1123 });
+    await page.setViewport({ width: 794, height: 900 });
 
     // Choose HTML generator based on templateKey
     let html;

@@ -1,10 +1,10 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
-// Convert HTML string to a PDF blob sized to A4 (794x1123px used by the app preview)
+// Convert HTML string to a PDF blob sized to certificate dimensions (794x900px used by the app preview)
 export async function htmlToPdfBlob(html, orientation = 'portrait') {
-  // Choose dimensions for A4 at ~96dpi (portrait only)
-  const dims = { width: 794, height: 1123 };
+  // Choose dimensions for certificate at ~96dpi (portrait only)
+  const dims = { width: 794, height: 900 };
 
   // Create offscreen container sized for orientation
   const container = document.createElement('div');
@@ -31,7 +31,7 @@ export async function htmlToPdfBlob(html, orientation = 'portrait') {
     const cert = container.querySelector('.certificate');
     if (cert) {
       const originalWidth = 794;
-      const originalHeight = 1123;
+      const originalHeight = 900;
       const scale = Math.min(dims.width / originalWidth, dims.height / originalHeight) * 0.95;
       cert.style.transform = `scale(${scale})`;
       cert.style.transformOrigin = 'center center';

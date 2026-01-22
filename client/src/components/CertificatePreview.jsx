@@ -213,7 +213,7 @@ export default function CertificatePreview({ item, onChange }) {
   const [orientation, setOrientation] = useState('portrait');
 
   // always use portrait preview dimensions
-  const previewDims = { width: 794, height: 1123 };
+  const previewDims = { width: 794, height: 900 };
 
   useEffect(() => {
     const iframe = iframeRef.current;
