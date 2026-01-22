@@ -83,8 +83,7 @@ function DirectTemplate({ item, start, end, onNameChange }) {
               fontSize: Math.max(20, (nameStyle.fontSize || 44) * 0.7) + 'px', 
               lineHeight: nameStyle.lineHeight || 1.3, 
               minWidth: '200px',
-              textAlign: nameStyle.align || 'center',
-              margin: `${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0`
+              textAlign: nameStyle.align || 'center'
             }} 
           />
           <span> {item?.introRight || "has participated in the event"}</span>

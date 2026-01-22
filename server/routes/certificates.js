@@ -263,7 +263,7 @@ function generateDirectHTML(doc) {
             <!-- Intro line with student name -->
             <div style="width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 16}px; line-height: ${introStyle.lineHeight || 1.4};">
               <span>${doc.introLeft || "This is to certify that Mr./Ms."} </span>
-              <span style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${Math.max(20, (nameStyle.fontSize || 44) * 0.7)}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 900;">${doc.studentName}</span>
+              <span style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${Math.max(20, (nameStyle.fontSize || 44) * 0.7)}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; color: #1d4ed8; font-weight: 900;">${doc.studentName}</span>
               <span> ${doc.introRight || "has participated in the event"}</span>
             </div>
 
@@ -371,7 +371,7 @@ function generateMinimalHTML(doc) {
           <!-- Intro line with student name -->
           <div style="width: ${introStyle.width || 80}%; margin: ${introStyle.marginTop || 10}px auto ${introStyle.marginBottom || 10}px auto; text-align: ${introStyle.align || 'center'}; font-family: ${introStyle.fontFamily || 'inherit'}; font-size: ${introStyle.fontSize || 18}px; line-height: ${introStyle.lineHeight || 1.5}; color: #374151;">
             <span>${doc.introLeft || "This is to certify that"} </span>
-            <div style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${nameStyle.fontSize || 32}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; margin: ${nameStyle.marginTop || 15}px 0 ${nameStyle.marginBottom || 15}px 0; color: #1d4ed8; font-weight: 800;">${doc.studentName}</div>
+            <span style="font-family: ${nameStyle.fontFamily || 'inherit'}; font-size: ${nameStyle.fontSize || 32}px; line-height: ${nameStyle.lineHeight || 1.3}; text-align: ${nameStyle.align || 'center'}; color: #1d4ed8; font-weight: 800;">${doc.studentName}</span>
             <span> ${doc.introRight || "has successfully completed the program"}</span>
           </div>
 
