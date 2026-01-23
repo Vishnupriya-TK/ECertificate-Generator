@@ -160,8 +160,9 @@ npm run dev
 ## 🧑‍💻 Author
 
 **👩‍💻 Vishnu Priya T K**
-📦 *Project:* Ecertificate Generator
+
 📧 *Email:* [tkvishnupriyacse@gmail.com](mailto:tkvishnupriyacse@gmail.com)
+
 🌐 *GitHub:* [https://github.com/Vishnupriya-TK](https://github.com/Vishnupriya-TK)
 
 ---
